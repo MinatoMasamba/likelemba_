@@ -1,0 +1,431 @@
+INFO 2026-04-22 01:10:30,853 autoreload 24484 17648 Watching for file changes with StatReloader
+INFO 2026-04-22 01:12:50,730 autoreload 26388 26252 Watching for file changes with StatReloader
+INFO 2026-04-22 01:22:03,446 autoreload 18520 25688 Watching for file changes with StatReloader
+INFO 2026-04-22 01:22:19,174 basehttp 18520 27512 "GET /admin/ HTTP/1.1" 302 0
+INFO 2026-04-22 01:22:19,902 basehttp 18520 27512 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4243
+INFO 2026-04-22 01:22:21,034 basehttp 18520 24740 "GET /static/admin/css/login.css HTTP/1.1" 200 951
+INFO 2026-04-22 01:22:21,057 basehttp 18520 27512 "GET /static/admin/css/base.css HTTP/1.1" 200 22120
+INFO 2026-04-22 01:22:21,062 basehttp 18520 23764 "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2808
+INFO 2026-04-22 01:22:21,069 basehttp 18520 20088 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
+INFO 2026-04-22 01:22:21,079 basehttp 18520 23832 "GET /static/admin/css/responsive.css HTTP/1.1" 200 16565
+INFO 2026-04-22 01:22:21,185 basehttp 18520 17280 "GET /static/admin/js/theme.js HTTP/1.1" 200 1653
+INFO 2026-04-22 01:22:21,208 basehttp 18520 23832 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+WARNING 2026-04-22 01:22:21,518 log 18520 23832 Not Found: /favicon.ico
+WARNING 2026-04-22 01:22:21,525 basehttp 18520 23832 "GET /favicon.ico HTTP/1.1" 404 3522
+INFO 2026-04-22 01:22:58,317 basehttp 18520 23832 "POST /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2026-04-22 01:22:58,545 basehttp 18520 23832 "GET /admin/ HTTP/1.1" 200 5659
+INFO 2026-04-22 01:22:58,805 basehttp 18520 23832 "GET /static/admin/css/dashboard.css HTTP/1.1" 200 441
+INFO 2026-04-22 01:22:58,907 basehttp 18520 23832 "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 200 331
+INFO 2026-04-22 01:22:58,937 basehttp 18520 17280 "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 200 380
+INFO 2026-04-22 01:23:07,998 basehttp 18520 17280 "GET /api/docs/ HTTP/1.1" 200 1648
+INFO 2026-04-22 01:23:08,546 basehttp 18520 17280 "GET /static/drf-yasg/style.css HTTP/1.1" 200 1187
+INFO 2026-04-22 01:23:08,708 basehttp 18520 23832 "GET /static/drf-yasg/swagger-ui-dist/swagger-ui.css HTTP/1.1" 200 177183
+INFO 2026-04-22 01:23:08,716 basehttp 18520 27512 "GET /static/drf-yasg/insQ.min.js HTTP/1.1" 200 2093
+INFO 2026-04-22 01:23:08,879 basehttp 18520 17280 "GET /static/drf-yasg/swagger-ui-init.js HTTP/1.1" 200 15480
+INFO 2026-04-22 01:23:08,905 basehttp 18520 24740 "GET /static/drf-yasg/immutable.min.js HTTP/1.1" 200 56904
+INFO 2026-04-22 01:23:08,966 basehttp 18520 23764 "GET /static/drf-yasg/swagger-ui-dist/swagger-ui-standalone-preset.js HTTP/1.1" 200 252451
+INFO 2026-04-22 01:23:09,127 basehttp 18520 20088 "GET /static/drf-yasg/swagger-ui-dist/swagger-ui-bundle.js HTTP/1.1" 200 1510271
+INFO 2026-04-22 01:23:09,594 basehttp 18520 20088 "GET /api/docs/?format=openapi HTTP/1.1" 200 486
+INFO 2026-04-22 01:23:09,693 basehttp 18520 20088 "GET /static/drf-yasg/swagger-ui-dist/favicon-32x32.png HTTP/1.1" 200 628
+INFO 2026-04-22 01:24:07,748 autoreload 18520 25688 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\config\settings\base.py changed, reloading.
+INFO 2026-04-22 01:24:29,995 autoreload 23216 2272 Watching for file changes with StatReloader
+WARNING 2026-04-22 01:25:21,879 log 23216 20712 Not Found: /api/v1/users/
+WARNING 2026-04-22 01:25:21,883 basehttp 23216 20712 "GET /api/v1/users/ HTTP/1.1" 404 3372
+WARNING 2026-04-22 01:26:24,650 log 23216 20712 Not Found: /api/v1/tontines/
+WARNING 2026-04-22 01:26:24,653 basehttp 23216 20712 "GET /api/v1/tontines/ HTTP/1.1" 404 3378
+INFO 2026-04-22 01:29:57,648 autoreload 23216 2272 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\urls.py changed, reloading.
+INFO 2026-04-22 01:30:00,708 autoreload 25820 26424 Watching for file changes with StatReloader
+WARNING 2026-04-22 01:30:18,188 log 25820 18520 Not Found: /api/v1/users/
+WARNING 2026-04-22 01:30:18,192 basehttp 25820 18520 "GET /api/v1/users/ HTTP/1.1" 404 6499
+WARNING 2026-04-22 01:30:43,725 log 25820 18520 Not Found: /api/v1/users/ auth/register/
+WARNING 2026-04-22 01:30:43,731 basehttp 25820 18520 "GET /api/v1/users/%20auth/register/ HTTP/1.1" 404 6546
+WARNING 2026-04-22 01:31:52,318 log 25820 18520 Method Not Allowed: /api/v1/users/auth/register/
+WARNING 2026-04-22 01:31:52,323 basehttp 25820 18520 "GET /api/v1/users/auth/register/ HTTP/1.1" 405 95
+INFO 2026-04-22 01:33:32,542 autoreload 25820 26424 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\transactions\urls.py changed, reloading.
+INFO 2026-04-22 01:33:35,025 autoreload 1116 20896 Watching for file changes with StatReloader
+INFO 2026-04-22 01:35:41,089 autoreload 1116 20896 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\urls.py changed, reloading.
+INFO 2026-04-22 01:35:44,107 autoreload 14884 25924 Watching for file changes with StatReloader
+INFO 2026-04-22 01:36:26,005 autoreload 14884 25924 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\sync\urls.py changed, reloading.
+INFO 2026-04-22 01:36:28,926 autoreload 11812 17336 Watching for file changes with StatReloader
+INFO 2026-04-22 01:37:28,136 autoreload 11812 17336 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\analytics\urls.py changed, reloading.
+INFO 2026-04-22 01:37:30,506 autoreload 17536 16164 Watching for file changes with StatReloader
+ERROR 2026-04-22 01:47:47,525 log 17536 18676 Invalid HTTP_HOST header: '192.168.89.244:8080'. You may need to add '192.168.89.244' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\ELITEBOOK\Desktop\project\likelemba\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELITEBOOK\Desktop\project\likelemba\env\Lib\site-packages\django\utils\deprecation.py", line 119, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELITEBOOK\Desktop\project\likelemba\env\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELITEBOOK\Desktop\project\likelemba\env\Lib\site-packages\django\http\request.py", line 203, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.89.244:8080'. You may need to add '192.168.89.244' to ALLOWED_HOSTS.
+WARNING 2026-04-22 01:47:47,575 basehttp 17536 18676 "GET / HTTP/1.1" 400 76106
+ERROR 2026-04-22 01:47:48,348 log 17536 25788 Invalid HTTP_HOST header: '192.168.89.244:8080'. You may need to add '192.168.89.244' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\ELITEBOOK\Desktop\project\likelemba\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELITEBOOK\Desktop\project\likelemba\env\Lib\site-packages\django\utils\deprecation.py", line 119, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELITEBOOK\Desktop\project\likelemba\env\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELITEBOOK\Desktop\project\likelemba\env\Lib\site-packages\django\http\request.py", line 203, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.89.244:8080'. You may need to add '192.168.89.244' to ALLOWED_HOSTS.
+WARNING 2026-04-22 01:47:48,356 basehttp 17536 25788 "GET /favicon.ico HTTP/1.1" 400 76164
+INFO 2026-04-22 01:49:38,936 autoreload 17536 16164 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\config\settings\base.py changed, reloading.
+INFO 2026-04-22 01:49:44,702 autoreload 23700 22836 Watching for file changes with StatReloader
+WARNING 2026-04-22 01:50:16,353 log 23700 20200 Not Found: /
+WARNING 2026-04-22 01:50:16,357 basehttp 23700 20200 "GET / HTTP/1.1" 404 3476
+WARNING 2026-04-22 01:50:16,784 log 23700 20200 Not Found: /favicon.ico
+WARNING 2026-04-22 01:50:16,789 basehttp 23700 20200 "GET /favicon.ico HTTP/1.1" 404 3527
+WARNING 2026-04-22 12:42:56,030 log 23700 23352 Not Found: /auth/register
+WARNING 2026-04-22 12:42:56,043 basehttp 23700 23352 "POST /auth/register HTTP/1.1" 404 3534
+WARNING 2026-04-22 12:45:23,440 log 23700 5760 Not Found: /api/auth/register
+WARNING 2026-04-22 12:45:23,456 basehttp 23700 5760 "POST /api/auth/register HTTP/1.1" 404 3546
+WARNING 2026-04-22 12:51:56,236 log 23700 1468 Not Found: /apiv1/users/auth/register/
+WARNING 2026-04-22 12:51:56,252 basehttp 23700 1468 "POST /apiv1/users/auth/register/ HTTP/1.1" 404 3573
+WARNING 2026-04-22 12:54:17,302 log 23700 24356 Bad Request: /api/v1/users/auth/register/
+WARNING 2026-04-22 12:54:17,302 basehttp 23700 24356 "POST /api/v1/users/auth/register/ HTTP/1.1" 400 217
+INFO 2026-04-22 14:01:49,032 basehttp 23700 28084 "POST /api/v1/users/auth/register/ HTTP/1.1" 201 62
+INFO 2026-04-22 14:02:29,395 basehttp 23700 29908 "GET /admin/ HTTP/1.1" 200 5659
+INFO 2026-04-22 14:02:29,498 basehttp 23700 29908 "GET /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2026-04-22 14:02:29,535 basehttp 23700 29908 "GET /admin/ HTTP/1.1" 200 5659
+INFO 2026-04-22 14:02:31,979 basehttp 23700 29908 "GET /admin/ HTTP/1.1" 200 5659
+INFO 2026-04-22 14:02:32,013 basehttp 23700 29908 "GET /static/admin/css/base.css HTTP/1.1" 304 0
+INFO 2026-04-22 14:02:32,014 basehttp 23700 30896 "GET /static/admin/css/dark_mode.css HTTP/1.1" 304 0
+INFO 2026-04-22 14:02:32,025 basehttp 23700 31584 "GET /static/admin/css/dashboard.css HTTP/1.1" 304 0
+INFO 2026-04-22 14:02:32,026 basehttp 23700 31980 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 304 0
+INFO 2026-04-22 14:02:32,026 basehttp 23700 29908 "GET /static/admin/js/theme.js HTTP/1.1" 304 0
+INFO 2026-04-22 14:02:32,028 basehttp 23700 30640 "GET /static/admin/css/responsive.css HTTP/1.1" 304 0
+INFO 2026-04-22 14:02:32,041 basehttp 23700 30640 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 304 0
+INFO 2026-04-22 14:02:44,029 basehttp 23700 30640 "GET /admin/ HTTP/1.1" 200 5659
+WARNING 2026-04-22 14:10:50,046 log 23700 28556 Bad Request: /api/v1/users/auth/register/
+WARNING 2026-04-22 14:10:50,046 basehttp 23700 28556 "POST /api/v1/users/auth/register/ HTTP/1.1" 400 129
+INFO 2026-04-22 14:11:06,655 basehttp 23700 4696 "POST /api/v1/users/auth/register/ HTTP/1.1" 201 61
+INFO 2026-04-23 10:34:13,246 autoreload 21664 8504 Watching for file changes with StatReloader
+INFO 2026-04-23 10:35:27,090 autoreload 3504 14704 Watching for file changes with StatReloader
+INFO 2026-04-23 10:39:03,698 basehttp 3504 27796 "GET /api/docs/ HTTP/1.1" 200 1648
+INFO 2026-04-23 10:39:03,857 basehttp 3504 27796 "GET /static/drf-yasg/style.css HTTP/1.1" 304 0
+INFO 2026-04-23 10:39:03,867 basehttp 3504 23504 "GET /static/drf-yasg/swagger-ui-dist/swagger-ui-standalone-preset.js HTTP/1.1" 304 0
+INFO 2026-04-23 10:39:03,867 basehttp 3504 8472 "GET /static/drf-yasg/swagger-ui-dist/swagger-ui-bundle.js HTTP/1.1" 304 0
+INFO 2026-04-23 10:39:03,868 basehttp 3504 13112 "GET /static/drf-yasg/swagger-ui-dist/swagger-ui.css HTTP/1.1" 304 0
+INFO 2026-04-23 10:39:03,908 basehttp 3504 22272 "GET /static/drf-yasg/immutable.min.js HTTP/1.1" 304 0
+INFO 2026-04-23 10:39:03,905 basehttp 3504 27796 "GET /static/drf-yasg/swagger-ui-init.js HTTP/1.1" 304 0
+INFO 2026-04-23 10:39:03,901 basehttp 3504 24244 "GET /static/drf-yasg/insQ.min.js HTTP/1.1" 304 0
+INFO 2026-04-23 10:39:06,722 basehttp 3504 27796 "GET /static/drf-yasg/swagger-ui-dist/favicon-32x32.png HTTP/1.1" 304 0
+INFO 2026-04-23 10:39:07,632 basehttp 3504 22272 "GET /api/docs/?format=openapi HTTP/1.1" 200 48195
+WARNING 2026-04-23 10:39:56,123 log 3504 22272 Unauthorized: /api/v1/tontines/groups/join-by-code/
+WARNING 2026-04-23 10:39:56,131 basehttp 3504 22272 "GET /api/v1/tontines/groups/join-by-code/?code=ABC123 HTTP/1.1" 401 103
+WARNING 2026-04-23 10:51:21,571 log 3504 12976 Unauthorized: /api/v1/tontines/groups/join-by-code/
+WARNING 2026-04-23 10:51:21,582 basehttp 3504 12976 "GET /api/v1/tontines/groups/join-by-code/?code=ABC123 HTTP/1.1" 401 103
+WARNING 2026-04-23 10:51:52,393 log 3504 12976 Unauthorized: /api/v1/tontines/groups/join-by-code/
+WARNING 2026-04-23 10:51:52,406 basehttp 3504 12976 "GET /api/v1/tontines/groups/join-by-code/?code=ABC123 HTTP/1.1" 401 103
+WARNING 2026-04-23 10:51:53,505 log 3504 12976 Unauthorized: /api/v1/tontines/groups/join-by-code/
+WARNING 2026-04-23 10:51:53,510 basehttp 3504 12976 "GET /api/v1/tontines/groups/join-by-code/?code=ABC123 HTTP/1.1" 401 103
+WARNING 2026-04-23 11:21:55,448 log 3504 25504 Method Not Allowed: /api/v1/users/auth/register/
+WARNING 2026-04-23 11:21:55,465 basehttp 3504 25504 "GET /api/v1/users/auth/register/ HTTP/1.1" 405 95
+WARNING 2026-04-23 11:21:56,181 log 3504 25504 Not Found: /favicon.ico
+WARNING 2026-04-23 11:21:56,183 basehttp 3504 25504 "GET /favicon.ico HTTP/1.1" 404 3527
+ERROR 2026-04-23 11:23:53,029 log 3504 30844 Internal Server Error: /api/v1/users/auth/register/
+ERROR 2026-04-23 11:23:53,029 basehttp 3504 30844 "POST /api/v1/users/auth/register/ HTTP/1.1" 500 90
+INFO 2026-04-23 11:26:33,749 autoreload 3504 14704 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\models.py changed, reloading.
+INFO 2026-04-23 11:26:39,070 autoreload 29176 14356 Watching for file changes with StatReloader
+INFO 2026-04-23 11:26:44,070 autoreload 29176 14356 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\models.py changed, reloading.
+INFO 2026-04-23 11:26:46,944 autoreload 32392 20448 Watching for file changes with StatReloader
+INFO 2026-04-23 11:29:02,954 autoreload 16972 27164 Watching for file changes with StatReloader
+WARNING 2026-04-23 11:30:10,718 log 16972 26896 Method Not Allowed: /api/v1/users/auth/register/
+WARNING 2026-04-23 11:30:10,727 basehttp 16972 26896 "GET /api/v1/users/auth/register/ HTTP/1.1" 405 95
+WARNING 2026-04-23 11:30:15,055 log 16972 26896 Method Not Allowed: /api/v1/users/auth/register/
+WARNING 2026-04-23 11:30:15,058 basehttp 16972 26896 "GET /api/v1/users/auth/register/ HTTP/1.1" 405 95
+INFO 2026-04-23 11:33:09,258 autoreload 4160 13052 Watching for file changes with StatReloader
+INFO 2026-04-23 11:33:18,039 basehttp 4160 15616 "POST /api/v1/users/auth/register/ HTTP/1.1" 201 90
+INFO 2026-04-23 11:54:01,457 autoreload 4160 13052 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\views.py changed, reloading.
+INFO 2026-04-23 11:54:03,614 autoreload 19244 16972 Watching for file changes with StatReloader
+INFO 2026-04-23 11:54:15,565 autoreload 19244 16972 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\views.py changed, reloading.
+INFO 2026-04-23 11:54:17,659 autoreload 31236 25960 Watching for file changes with StatReloader
+INFO 2026-04-23 11:54:21,008 autoreload 31236 25960 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\views.py changed, reloading.
+INFO 2026-04-23 11:54:22,111 autoreload 11120 21424 Watching for file changes with StatReloader
+INFO 2026-04-23 11:54:38,651 autoreload 11120 21424 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\serializers.py changed, reloading.
+INFO 2026-04-23 11:54:39,753 autoreload 27172 30616 Watching for file changes with StatReloader
+INFO 2026-04-23 11:54:41,590 autoreload 27172 30616 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\serializers.py changed, reloading.
+INFO 2026-04-23 11:54:42,664 autoreload 30836 30172 Watching for file changes with StatReloader
+INFO 2026-04-23 11:54:51,193 autoreload 30836 30172 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\serializers.py changed, reloading.
+INFO 2026-04-23 11:54:52,412 autoreload 27436 30104 Watching for file changes with StatReloader
+INFO 2026-04-23 11:54:55,071 autoreload 27436 30104 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\serializers.py changed, reloading.
+INFO 2026-04-23 11:54:56,203 autoreload 28920 5836 Watching for file changes with StatReloader
+INFO 2026-04-23 11:55:06,899 autoreload 28920 5836 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\serializers.py changed, reloading.
+INFO 2026-04-23 11:55:08,016 autoreload 24512 3552 Watching for file changes with StatReloader
+INFO 2026-04-23 11:55:28,121 autoreload 24512 3552 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\views.py changed, reloading.
+INFO 2026-04-23 11:55:29,277 autoreload 20372 27532 Watching for file changes with StatReloader
+WARNING 2026-04-23 12:08:07,499 log 20372 17776 Not Found: /api/auth/verify-otp
+WARNING 2026-04-23 12:08:07,513 basehttp 20372 17776 "POST /api/auth/verify-otp HTTP/1.1" 404 3552
+WARNING 2026-04-23 12:08:49,515 log 20372 12508 Not Found: /api/auth/verify-otp
+WARNING 2026-04-23 12:08:49,515 basehttp 20372 12508 "POST /api/auth/verify-otp HTTP/1.1" 404 3552
+WARNING 2026-04-23 12:09:18,081 log 20372 24316 Not Found: /api/auth/verify-otp
+WARNING 2026-04-23 12:09:18,081 basehttp 20372 24316 "GET /api/auth/verify-otp HTTP/1.1" 404 3551
+WARNING 2026-04-23 12:12:09,354 log 20372 21256 Not Found: /api/auth/token/
+WARNING 2026-04-23 12:12:09,369 basehttp 20372 21256 "POST /api/auth/token/ HTTP/1.1" 404 3540
+WARNING 2026-04-23 12:12:51,684 log 20372 24316 Not Found: /api/auth/token/
+WARNING 2026-04-23 12:12:51,686 basehttp 20372 24316 "GET /api/auth/token/ HTTP/1.1" 404 3539
+WARNING 2026-04-23 12:13:15,541 log 20372 24316 Method Not Allowed: /api/v1/users/auth/token/
+WARNING 2026-04-23 12:13:15,543 basehttp 20372 24316 "GET /api/v1/users/auth/token/ HTTP/1.1" 405 95
+WARNING 2026-04-23 12:14:48,310 log 20372 26660 Bad Request: /api/v1/users/auth/token/
+WARNING 2026-04-23 12:14:48,310 basehttp 20372 26660 "POST /api/v1/users/auth/token/ HTTP/1.1" 400 133
+ERROR 2026-04-23 12:18:10,137 log 20372 26952 Internal Server Error: /api/v1/users/auth/token/
+ERROR 2026-04-23 12:18:10,142 basehttp 20372 26952 "POST /api/v1/users/auth/token/ HTTP/1.1" 500 90
+INFO 2026-04-23 12:19:40,988 autoreload 20372 27532 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\serializers.py changed, reloading.
+INFO 2026-04-23 12:19:43,278 autoreload 29176 32088 Watching for file changes with StatReloader
+INFO 2026-04-23 12:20:07,869 autoreload 29176 32088 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\serializers.py changed, reloading.
+INFO 2026-04-23 12:20:09,218 autoreload 29028 25264 Watching for file changes with StatReloader
+INFO 2026-04-23 12:22:32,270 autoreload 29028 25264 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\serializers.py changed, reloading.
+INFO 2026-04-23 12:22:33,409 autoreload 29588 4920 Watching for file changes with StatReloader
+INFO 2026-04-23 12:22:53,007 basehttp 29588 27844 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 670
+INFO 2026-04-23 12:23:08,390 basehttp 29588 31856 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 670
+INFO 2026-04-23 12:23:11,423 basehttp 29588 31856 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 670
+INFO 2026-04-23 12:24:02,903 basehttp 29588 17796 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 670
+INFO 2026-04-23 13:06:59,072 basehttp 29588 5448 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 670
+WARNING 2026-04-23 13:11:41,615 log 29588 29744 Bad Request: /api/v1/users/auth/register/
+WARNING 2026-04-23 13:11:41,615 basehttp 29588 29744 "POST /api/v1/users/auth/register/ HTTP/1.1" 400 129
+WARNING 2026-04-23 13:14:44,106 log 29588 29744 Bad Request: /api/v1/users/auth/register/
+WARNING 2026-04-23 13:14:44,110 basehttp 29588 29744 "POST /api/v1/users/auth/register/ HTTP/1.1" 400 129
+WARNING 2026-04-23 13:15:14,052 log 29588 8068 Unauthorized: /api/v1/users/auth/token/
+WARNING 2026-04-23 13:15:14,052 basehttp 29588 8068 "POST /api/v1/users/auth/token/ HTTP/1.1" 401 128
+WARNING 2026-04-23 13:15:55,861 log 29588 25400 Unauthorized: /api/v1/users/auth/token/
+WARNING 2026-04-23 13:15:55,861 basehttp 29588 25400 "POST /api/v1/users/auth/token/ HTTP/1.1" 401 128
+WARNING 2026-04-23 13:17:22,194 log 29588 23584 Unauthorized: /api/v1/users/auth/token/
+WARNING 2026-04-23 13:17:22,194 basehttp 29588 23584 "POST /api/v1/users/auth/token/ HTTP/1.1" 401 128
+INFO 2026-04-23 13:17:59,388 basehttp 29588 29744 "POST /api/v1/users/auth/register/ HTTP/1.1" 201 117
+INFO 2026-04-23 13:18:18,659 basehttp 29588 16560 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 679
+WARNING 2026-04-23 13:21:37,065 log 29588 29744 Unauthorized: /api/v1/tontines/groups/
+WARNING 2026-04-23 13:21:37,065 basehttp 29588 29744 "POST /api/v1/tontines/groups/ HTTP/1.1" 401 103
+INFO 2026-04-23 13:50:36,655 autoreload 29588 4920 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\models.py changed, reloading.
+INFO 2026-04-23 13:50:40,717 autoreload 30992 27192 Watching for file changes with StatReloader
+INFO 2026-04-23 13:53:11,119 autoreload 30992 27192 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\serializers.py changed, reloading.
+INFO 2026-04-23 13:53:12,648 autoreload 27348 19700 Watching for file changes with StatReloader
+INFO 2026-04-23 13:53:30,439 autoreload 27348 19700 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\serializers.py changed, reloading.
+INFO 2026-04-23 13:53:31,729 autoreload 18740 31588 Watching for file changes with StatReloader
+INFO 2026-04-23 13:53:39,281 autoreload 18740 31588 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\serializers.py changed, reloading.
+INFO 2026-04-23 13:53:40,486 autoreload 21968 31576 Watching for file changes with StatReloader
+INFO 2026-04-23 13:53:50,147 autoreload 21968 31576 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\serializers.py changed, reloading.
+INFO 2026-04-23 13:53:51,140 autoreload 32420 18868 Watching for file changes with StatReloader
+INFO 2026-04-23 13:54:19,243 autoreload 32420 18868 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\serializers.py changed, reloading.
+INFO 2026-04-23 13:54:20,626 autoreload 30800 24352 Watching for file changes with StatReloader
+WARNING 2026-04-23 14:51:25,661 log 30800 31272 Bad Request: /api/v1/users/auth/register/
+WARNING 2026-04-23 14:51:25,677 basehttp 30800 31272 "POST /api/v1/users/auth/register/ HTTP/1.1" 400 129
+INFO 2026-04-23 14:55:17,703 autoreload 30800 24352 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\admin.py changed, reloading.
+INFO 2026-04-23 14:55:19,559 autoreload 19640 27392 Watching for file changes with StatReloader
+INFO 2026-04-23 14:55:33,652 basehttp 19640 27324 "GET /admin HTTP/1.1" 301 0
+INFO 2026-04-23 14:55:33,700 basehttp 19640 14008 "GET /admin/ HTTP/1.1" 302 0
+INFO 2026-04-23 14:55:34,132 basehttp 19640 14008 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4383
+INFO 2026-04-23 14:55:34,285 basehttp 19640 14008 "GET /static/admin/css/base.css HTTP/1.1" 304 0
+INFO 2026-04-23 14:55:34,324 basehttp 19640 28664 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 304 0
+INFO 2026-04-23 14:55:34,324 basehttp 19640 14008 "GET /static/admin/js/theme.js HTTP/1.1" 304 0
+INFO 2026-04-23 14:55:34,325 basehttp 19640 18392 "GET /static/admin/css/dark_mode.css HTTP/1.1" 304 0
+INFO 2026-04-23 14:55:34,331 basehttp 19640 5108 "GET /static/admin/css/responsive.css HTTP/1.1" 304 0
+INFO 2026-04-23 14:55:34,332 basehttp 19640 28736 "GET /static/admin/css/login.css HTTP/1.1" 304 0
+INFO 2026-04-23 14:55:34,388 basehttp 19640 28736 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 304 0
+INFO 2026-04-23 14:55:34,667 basehttp 19640 28736 "GET /static/admin/img/icon-yes.svg HTTP/1.1" 200 436
+INFO 2026-04-23 14:55:53,226 basehttp 19640 28736 "POST /admin/login/?next=/admin/ HTTP/1.1" 200 4490
+INFO 2026-04-23 14:56:00,291 basehttp 19640 28736 "POST /admin/login/?next=/admin/ HTTP/1.1" 200 4490
+INFO 2026-04-23 14:56:21,560 basehttp 19640 28736 "POST /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2026-04-23 14:56:21,636 basehttp 19640 28736 "GET /admin/ HTTP/1.1" 200 8002
+INFO 2026-04-23 14:56:21,681 basehttp 19640 28736 "GET /static/admin/css/dashboard.css HTTP/1.1" 304 0
+INFO 2026-04-23 14:56:21,695 basehttp 19640 28736 "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 304 0
+INFO 2026-04-23 14:56:21,700 basehttp 19640 5108 "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 304 0
+INFO 2026-04-23 14:56:26,681 basehttp 19640 5108 "GET /admin/users/user/ HTTP/1.1" 200 17592
+INFO 2026-04-23 14:56:26,749 basehttp 19640 5108 "GET /static/admin/css/changelists.css HTTP/1.1" 200 6878
+INFO 2026-04-23 14:56:26,806 basehttp 19640 14008 "GET /static/admin/js/jquery.init.js HTTP/1.1" 200 347
+INFO 2026-04-23 14:56:26,862 basehttp 19640 28736 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-23 14:56:26,875 basehttp 19640 14008 "GET /static/admin/js/urlify.js HTTP/1.1" 200 7887
+INFO 2026-04-23 14:56:26,877 basehttp 19640 28664 "GET /static/admin/js/core.js HTTP/1.1" 200 6208
+INFO 2026-04-23 14:56:26,911 basehttp 19640 5108 "GET /static/admin/js/actions.js HTTP/1.1" 200 8076
+INFO 2026-04-23 14:56:26,938 basehttp 19640 3924 "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 200 9777
+INFO 2026-04-23 14:56:26,943 basehttp 19640 14008 "GET /static/admin/img/search.svg HTTP/1.1" 200 458
+INFO 2026-04-23 14:56:26,974 basehttp 19640 5108 "GET /static/admin/img/icon-no.svg HTTP/1.1" 200 560
+INFO 2026-04-23 14:56:26,990 basehttp 19640 28736 "GET /static/admin/js/prepopulate.js HTTP/1.1" 200 1531
+INFO 2026-04-23 14:56:27,018 basehttp 19640 18392 "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 200 285314
+INFO 2026-04-23 14:56:27,122 basehttp 19640 18392 "GET /static/admin/js/filters.js HTTP/1.1" 200 978
+INFO 2026-04-23 14:56:27,302 basehttp 19640 28664 "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 200 325171
+INFO 2026-04-23 14:56:27,426 basehttp 19640 18392 "GET /static/admin/img/sorting-icons.svg HTTP/1.1" 200 1097
+INFO 2026-04-23 14:56:27,426 basehttp 19640 28736 "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 200 581
+INFO 2026-04-23 14:56:27,429 basehttp 19640 28664 "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 200 331
+INFO 2026-04-23 14:56:47,861 basehttp 19640 28736 "GET /admin/users/user/5/change/ HTTP/1.1" 200 32236
+INFO 2026-04-23 14:56:47,917 basehttp 19640 28664 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-23 14:56:47,925 basehttp 19640 28736 "GET /static/admin/css/forms.css HTTP/1.1" 200 8525
+INFO 2026-04-23 14:56:47,945 basehttp 19640 14008 "GET /static/admin/js/prepopulate_init.js HTTP/1.1" 200 586
+INFO 2026-04-23 14:56:47,957 basehttp 19640 5108 "GET /static/admin/js/SelectFilter2.js HTTP/1.1" 200 15845
+INFO 2026-04-23 14:56:47,961 basehttp 19640 28736 "GET /static/admin/css/widgets.css HTTP/1.1" 200 11973
+INFO 2026-04-23 14:56:47,966 basehttp 19640 18392 "GET /static/admin/js/SelectBox.js HTTP/1.1" 200 4530
+INFO 2026-04-23 14:56:48,049 basehttp 19640 28736 "GET /static/admin/js/change_form.js HTTP/1.1" 200 606
+INFO 2026-04-23 14:56:48,241 basehttp 19640 28736 "GET /static/admin/img/selector-icons.svg HTTP/1.1" 200 3291
+INFO 2026-04-23 14:57:03,059 basehttp 19640 28736 "GET /admin/users/userdevice/ HTTP/1.1" 200 10910
+INFO 2026-04-23 14:57:03,088 basehttp 19640 28736 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-23 14:57:05,862 basehttp 19640 28736 "GET /admin/users/userprofile/ HTTP/1.1" 200 15572
+INFO 2026-04-23 14:57:05,909 basehttp 19640 28736 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-23 14:57:09,013 basehttp 19640 28736 "GET /admin/users/userprofile/671f8f7f-cbc3-49c6-b343-d94a08b0d4cc/change/ HTTP/1.1" 200 16597
+INFO 2026-04-23 14:57:09,047 basehttp 19640 28736 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-23 14:57:11,883 basehttp 19640 28736 "GET /admin/users/userprofile/ HTTP/1.1" 200 15572
+INFO 2026-04-23 14:57:22,323 basehttp 19640 28736 "GET /admin/users/userprofile/671f8f7f-cbc3-49c6-b343-d94a08b0d4cc/change/ HTTP/1.1" 200 16597
+INFO 2026-04-23 14:57:22,379 basehttp 19640 28736 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-23 14:57:57,552 autoreload 19640 27392 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\admin.py changed, reloading.
+INFO 2026-04-23 14:57:59,017 autoreload 28212 31608 Watching for file changes with StatReloader
+INFO 2026-04-23 14:58:02,248 autoreload 28212 31608 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\users\admin.py changed, reloading.
+INFO 2026-04-23 14:58:03,437 autoreload 20696 29460 Watching for file changes with StatReloader
+INFO 2026-04-23 14:58:09,088 basehttp 20696 25860 "GET /admin/users/userprofile/671f8f7f-cbc3-49c6-b343-d94a08b0d4cc/change/ HTTP/1.1" 200 16597
+INFO 2026-04-23 14:58:09,128 basehttp 20696 25860 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-23 14:58:11,672 basehttp 20696 25860 "GET /admin/users/user/ HTTP/1.1" 200 17985
+INFO 2026-04-23 14:58:11,700 basehttp 20696 25860 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-23 17:05:53,900 basehttp 20696 20344 "GET /admin/users/user/5/change/ HTTP/1.1" 200 32236
+INFO 2026-04-23 17:05:54,303 basehttp 20696 20344 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-23 17:16:33,251 basehttp 20696 31132 "POST /api/v1/users/auth/register/ HTTP/1.1" 201 87
+ERROR 2026-04-23 17:23:32,816 log 20696 5112 Internal Server Error: /api/docs/
+ERROR 2026-04-23 17:23:32,822 basehttp 20696 5112 "GET /api/docs/?format=openapi HTTP/1.1" 500 90
+INFO 2026-04-24 12:26:03,281 autoreload 27664 23768 Watching for file changes with StatReloader
+INFO 2026-04-24 12:43:49,382 basehttp 27664 23300 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 666
+INFO 2026-04-24 12:55:54,507 basehttp 27664 14232 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 666
+INFO 2026-04-24 13:27:21,022 basehttp 27664 32496 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 666
+WARNING 2026-04-24 13:27:44,993 log 27664 20968 Unauthorized: /api/v1/tontines/groups/
+WARNING 2026-04-24 13:27:44,993 basehttp 27664 20968 "POST /api/v1/tontines/groups/ HTTP/1.1" 401 103
+WARNING 2026-04-24 13:38:59,143 log 27664 18552 Unauthorized: /api/v1/tontines/groups/
+WARNING 2026-04-24 13:38:59,178 basehttp 27664 18552 "POST /api/v1/tontines/groups/ HTTP/1.1" 401 103
+INFO 2026-04-24 13:47:41,078 basehttp 27664 28580 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 666
+ERROR 2026-04-24 13:48:03,775 log 27664 4420 Internal Server Error: /api/v1/tontines/groups/
+ERROR 2026-04-24 13:48:03,777 basehttp 27664 4420 "POST /api/v1/tontines/groups/ HTTP/1.1" 500 90
+INFO 2026-04-24 20:05:14,540 autoreload 27664 23768 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\serializers.py changed, reloading.
+INFO 2026-04-24 20:05:25,627 autoreload 24308 31232 Watching for file changes with StatReloader
+INFO 2026-04-24 20:09:44,555 autoreload 24308 31232 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\serializers.py changed, reloading.
+INFO 2026-04-24 20:09:51,166 autoreload 18460 22888 Watching for file changes with StatReloader
+INFO 2026-04-24 20:12:38,078 basehttp 18460 28272 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 666
+WARNING 2026-04-24 20:12:59,389 log 18460 31612 Bad Request: /api/v1/tontines/groups/
+WARNING 2026-04-24 20:12:59,389 basehttp 18460 31612 "POST /api/v1/tontines/groups/ HTTP/1.1" 400 93
+ERROR 2026-04-24 20:19:10,312 log 18460 22592 Internal Server Error: /api/v1/tontines/groups/
+ERROR 2026-04-24 20:19:10,312 basehttp 18460 22592 "POST /api/v1/tontines/groups/ HTTP/1.1" 500 90
+INFO 2026-04-24 20:20:44,606 autoreload 20632 30496 Watching for file changes with StatReloader
+ERROR 2026-04-24 20:21:02,438 log 20632 21724 Internal Server Error: /api/v1/tontines/groups/
+ERROR 2026-04-24 20:21:02,439 basehttp 20632 21724 "POST /api/v1/tontines/groups/ HTTP/1.1" 500 90
+INFO 2026-04-24 20:22:08,360 autoreload 20632 30496 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\views.py changed, reloading.
+INFO 2026-04-24 20:22:11,678 autoreload 31192 10044 Watching for file changes with StatReloader
+INFO 2026-04-24 20:22:45,712 autoreload 31192 10044 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\views.py changed, reloading.
+INFO 2026-04-24 20:22:48,367 autoreload 13080 15520 Watching for file changes with StatReloader
+INFO 2026-04-24 20:22:56,589 autoreload 13080 15520 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\views.py changed, reloading.
+INFO 2026-04-24 20:22:58,817 autoreload 5784 8316 Watching for file changes with StatReloader
+INFO 2026-04-24 20:23:21,184 basehttp 5784 31772 "POST /api/v1/tontines/groups/ HTTP/1.1" 201 749
+INFO 2026-04-24 20:23:52,243 basehttp 5784 29004 "GET /admin/users/user/5/change/ HTTP/1.1" 200 32236
+INFO 2026-04-24 20:23:52,582 basehttp 5784 29004 "GET /static/admin/css/base.css HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:52,673 basehttp 5784 29004 "GET /static/admin/js/theme.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:52,686 basehttp 5784 28900 "GET /static/admin/css/forms.css HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:52,686 basehttp 5784 10708 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:52,696 basehttp 5784 30504 "GET /static/admin/css/dark_mode.css HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:52,701 basehttp 5784 29004 "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:52,703 basehttp 5784 24728 "GET /static/admin/css/responsive.css HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:52,714 basehttp 5784 28900 "GET /static/admin/js/core.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:52,733 basehttp 5784 10708 "GET /static/admin/js/jquery.init.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:52,742 basehttp 5784 30504 "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:52,750 basehttp 5784 29004 "GET /static/admin/js/SelectBox.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:52,937 basehttp 5784 32572 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-24 20:23:53,115 basehttp 5784 24728 "GET /static/admin/js/actions.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:53,120 basehttp 5784 28900 "GET /static/admin/js/SelectFilter2.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:53,118 basehttp 5784 30504 "GET /static/admin/js/prepopulate.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:53,118 basehttp 5784 29004 "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:53,120 basehttp 5784 10708 "GET /static/admin/js/urlify.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:53,158 basehttp 5784 29004 "GET /static/admin/css/widgets.css HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:53,654 basehttp 5784 29004 "GET /static/admin/js/prepopulate_init.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:53,677 basehttp 5784 29004 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:53,751 basehttp 5784 29004 "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:53,757 basehttp 5784 32572 "GET /static/admin/js/change_form.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:53,993 basehttp 5784 32572 "GET /static/admin/img/search.svg HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:54,000 basehttp 5784 29004 "GET /static/admin/img/selector-icons.svg HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:56,380 basehttp 5784 29004 "GET /admin/users/user/ HTTP/1.1" 200 18679
+INFO 2026-04-24 20:23:56,442 basehttp 5784 29004 "GET /static/admin/css/changelists.css HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:56,455 basehttp 5784 10708 "GET /static/admin/img/icon-no.svg HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:56,455 basehttp 5784 32572 "GET /static/admin/img/icon-yes.svg HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:56,467 basehttp 5784 29004 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-24 20:23:56,493 basehttp 5784 29004 "GET /static/admin/js/filters.js HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:56,560 basehttp 5784 29004 "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:56,574 basehttp 5784 29004 "GET /static/admin/img/sorting-icons.svg HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:56,583 basehttp 5784 29004 "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 304 0
+INFO 2026-04-24 20:23:59,506 basehttp 5784 29004 "GET /admin/users/user/6/change/ HTTP/1.1" 200 32159
+INFO 2026-04-24 20:23:59,777 basehttp 5784 29004 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-24 20:26:36,252 autoreload 5784 8316 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\admin.py changed, reloading.
+INFO 2026-04-24 20:26:39,194 autoreload 9720 30292 Watching for file changes with StatReloader
+INFO 2026-04-24 20:26:48,305 basehttp 9720 28520 "GET /admin/users/user/6/change/ HTTP/1.1" 200 34963
+INFO 2026-04-24 20:26:48,422 basehttp 9720 28520 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-24 20:26:55,189 basehttp 9720 28520 "GET /admin/tontines/likelembagroup/ HTTP/1.1" 200 17795
+INFO 2026-04-24 20:26:55,312 basehttp 9720 28520 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-24 20:27:08,133 basehttp 9720 28520 "GET /admin/tontines/likelembagroup/7980d209-10ef-4916-90a0-f89d674a49dc/change/ HTTP/1.1" 200 46107
+INFO 2026-04-24 20:27:08,230 basehttp 9720 28520 "GET /admin/jsi18n/ HTTP/1.1" 200 8634
+INFO 2026-04-24 20:27:08,883 basehttp 9720 9956 "GET /static/admin/js/calendar.js HTTP/1.1" 200 9141
+INFO 2026-04-24 20:27:08,883 basehttp 9720 28520 "GET /static/admin/js/admin/DateTimeShortcuts.js HTTP/1.1" 200 19319
+INFO 2026-04-24 20:27:08,932 basehttp 9720 28520 "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 304 0
+INFO 2026-04-24 20:27:09,017 basehttp 9720 28520 "GET /static/admin/img/icon-deletelink.svg HTTP/1.1" 200 392
+INFO 2026-04-24 20:27:09,071 basehttp 9720 32244 "GET /static/admin/js/inlines.js HTTP/1.1" 200 15628
+INFO 2026-04-24 20:27:09,077 basehttp 9720 28520 "GET /static/admin/img/icon-unknown.svg HTTP/1.1" 200 655
+INFO 2026-04-24 20:27:09,335 basehttp 9720 32244 "GET /static/admin/img/icon-clock.svg HTTP/1.1" 200 677
+INFO 2026-04-24 20:27:09,342 basehttp 9720 28520 "GET /static/admin/img/icon-calendar.svg HTTP/1.1" 200 1086
+INFO 2026-04-24 20:27:34,500 basehttp 9720 28520 "GET /admin/tontines/likelembagroup/ HTTP/1.1" 200 17795
+INFO 2026-04-24 20:42:34,890 basehttp 9720 4916 "GET /api/v1/tontines/groups/ HTTP/1.1" 200 834
+INFO 2026-04-24 20:42:56,964 basehttp 9720 22148 "GET /api/v1/tontines/groups/ HTTP/1.1" 200 834
+INFO 2026-04-24 20:43:03,628 basehttp 9720 19136 "GET /api/v1/tontines/groups/ HTTP/1.1" 200 834
+INFO 2026-04-24 20:44:20,843 basehttp 9720 30844 "GET /api/v1/tontines/groups/ HTTP/1.1" 200 834
+INFO 2026-04-24 20:48:06,654 basehttp 9720 30832 "GET /api/v1/tontines/groups/ HTTP/1.1" 200 834
+INFO 2026-04-24 20:54:43,165 basehttp 9720 18184 "GET /api/v1/tontines/groups/ HTTP/1.1" 200 834
+INFO 2026-04-24 20:55:27,931 basehttp 9720 28776 "GET /api/v1/tontines/groups/ HTTP/1.1" 200 834
+INFO 2026-04-24 21:58:34,079 basehttp 9720 23144 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 666
+INFO 2026-04-24 21:58:36,128 basehttp 9720 23144 "GET /api/v1/tontines/groups/ HTTP/1.1" 200 834
+INFO 2026-04-24 22:02:55,781 basehttp 9720 16060 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 666
+INFO 2026-04-24 22:02:57,233 basehttp 9720 16060 "GET /api/v1/tontines/groups/ HTTP/1.1" 200 834
+INFO 2026-04-24 22:05:20,198 basehttp 9720 25652 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 666
+INFO 2026-04-24 22:05:21,969 basehttp 9720 25652 "GET /api/v1/tontines/groups/ HTTP/1.1" 200 834
+WARNING 2026-04-25 08:23:09,043 log 9720 29928 Not Found: /api/
+WARNING 2026-04-25 08:23:09,053 basehttp 9720 29928 "GET /api/ HTTP/1.1" 404 3506
+WARNING 2026-04-25 08:23:09,573 log 9720 29928 Not Found: /favicon.ico
+WARNING 2026-04-25 08:23:09,579 basehttp 9720 29928 "GET /favicon.ico HTTP/1.1" 404 3527
+WARNING 2026-04-25 08:23:36,152 log 9720 29928 Method Not Allowed: /api/v1/users/auth/token/
+WARNING 2026-04-25 08:23:36,154 basehttp 9720 29928 "GET /api/v1/users/auth/token/ HTTP/1.1" 405 95
+WARNING 2026-04-25 08:23:41,370 log 9720 29928 Method Not Allowed: /api/v1/users/auth/token/
+WARNING 2026-04-25 08:23:41,370 basehttp 9720 29928 "GET /api/v1/users/auth/token/ HTTP/1.1" 405 95
+WARNING 2026-04-25 08:25:28,899 log 9720 30452 Unauthorized: /api/v1/users/auth/token/
+WARNING 2026-04-25 08:25:28,899 basehttp 9720 30452 "POST /api/v1/users/auth/token/ HTTP/1.1" 401 128
+INFO 2026-04-25 08:25:57,081 basehttp 9720 1872 "POST /api/v1/users/auth/token/ HTTP/1.1" 200 666
+INFO 2026-04-25 08:25:58,553 basehttp 9720 1872 "GET /api/v1/tontines/groups/ HTTP/1.1" 200 833
+WARNING 2026-04-25 09:15:01,304 log 9720 30480 Not Found: /api/v1/tontines/groups/1/members/1/validation/
+WARNING 2026-04-25 09:15:01,315 basehttp 9720 30480 "GET /api/v1/tontines/groups/1/members/1/validation/ HTTP/1.1" 404 18131
+INFO 2026-04-25 09:22:37,891 autoreload 9720 30292 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\views.py changed, reloading.
+INFO 2026-04-25 09:22:43,367 autoreload 27836 31768 Watching for file changes with StatReloader
+INFO 2026-04-25 09:23:14,728 autoreload 27836 31768 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\urls.py changed, reloading.
+INFO 2026-04-25 09:23:17,389 autoreload 5228 26416 Watching for file changes with StatReloader
+INFO 2026-04-25 09:23:27,245 autoreload 5228 26416 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\urls.py changed, reloading.
+INFO 2026-04-25 09:23:30,146 autoreload 29124 28212 Watching for file changes with StatReloader
+INFO 2026-04-25 09:25:58,553 autoreload 29124 28212 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\views.py changed, reloading.
+INFO 2026-04-25 09:26:02,594 autoreload 20044 11292 Watching for file changes with StatReloader
+WARNING 2026-04-25 09:30:10,657 log 20044 32384 Not Found: /api/v1/tontines/groups/1/members/1/validation/
+WARNING 2026-04-25 09:30:10,662 basehttp 20044 32384 "GET /api/v1/tontines/groups/1/members/1/validation/ HTTP/1.1" 404 18475
+WARNING 2026-04-25 09:33:15,960 log 20044 11632 Method Not Allowed: /api/v1/users/auth/token/
+WARNING 2026-04-25 09:33:15,963 basehttp 20044 11632 "GET /api/v1/users/auth/token/ HTTP/1.1" 405 95
+WARNING 2026-04-25 09:33:33,454 log 20044 11632 Not Found: /api/v1/tontines/groups/1/members/1/validation/
+WARNING 2026-04-25 09:33:33,454 basehttp 20044 11632 "GET /api/v1/tontines/groups/1/members/1/validation/ HTTP/1.1" 404 18475
+WARNING 2026-04-25 09:34:31,121 log 20044 11632 Not Found: /api/v1/tontines/ groups/1/members/1/validation/
+WARNING 2026-04-25 09:34:31,131 basehttp 20044 11632 "GET /api/v1/tontines/%20groups/1/members/1/validation/ HTTP/1.1" 404 18480
+WARNING 2026-04-25 09:35:04,609 log 20044 11632 Not Found: /api/v1/tontines/groups/1/members/1/validation/
+WARNING 2026-04-25 09:35:04,617 basehttp 20044 11632 "GET /api/v1/tontines/groups/1/members/1/validation/ HTTP/1.1" 404 18475
+INFO 2026-04-25 09:36:42,029 autoreload 20044 11292 C:\Users\ELITEBOOK\Desktop\project\likelemba\likelemba_\apps\tontines\urls.py changed, reloading.
+INFO 2026-04-25 09:36:45,926 autoreload 27892 25924 Watching for file changes with StatReloader
+WARNING 2026-04-25 09:36:56,660 log 27892 27772 Unauthorized: /api/v1/tontines/groups/1/members/1/validation/
+WARNING 2026-04-25 09:36:56,665 basehttp 27892 27772 "GET /api/v1/tontines/groups/1/members/1/validation/ HTTP/1.1" 401 103
+WARNING 2026-04-25 09:37:10,126 log 27892 30140 Not Found: /api/v1/tontines/groups/1/members/1/validation/
+WARNING 2026-04-25 09:37:10,142 basehttp 27892 30140 "GET /api/v1/tontines/groups/1/members/1/validation/ HTTP/1.1" 404 55
+WARNING 2026-04-25 09:37:35,462 log 27892 15920 Not Found: /api/v1/tontines/groups/1/members/1/validation/
+WARNING 2026-04-25 09:37:35,468 basehttp 27892 15920 "GET /api/v1/tontines/groups/1/members/1/validation/ HTTP/1.1" 404 55
+WARNING 2026-04-25 09:38:05,428 log 27892 27772 Unauthorized: /api/v1/tontines/groups/1/members/1/validation/
+WARNING 2026-04-25 09:38:05,436 basehttp 27892 27772 "GET /api/v1/tontines/groups/1/members/1/validation/ HTTP/1.1" 401 103
+WARNING 2026-04-25 09:38:06,573 log 27892 27772 Unauthorized: /api/v1/tontines/groups/1/members/1/validation/
+WARNING 2026-04-25 09:38:06,574 basehttp 27892 27772 "GET /api/v1/tontines/groups/1/members/1/validation/ HTTP/1.1" 401 103
+WARNING 2026-04-25 09:38:07,365 log 27892 27772 Unauthorized: /api/v1/tontines/groups/1/members/1/validation/
+WARNING 2026-04-25 09:38:07,367 basehttp 27892 27772 "GET /api/v1/tontines/groups/1/members/1/validation/ HTTP/1.1" 401 103

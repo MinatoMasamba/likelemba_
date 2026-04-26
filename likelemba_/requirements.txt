@@ -1,0 +1,30 @@
+# Django et outils associés
+Django
+djangorestframework
+django-cors-headers
+django-filter
+django-environ
+
+# Base de données
+#psycopg2-binary==2.9.9
+
+# Authentification
+djangorestframework-simplejwt
+drf-yasg
+
+# Tâches asynchrones
+celery
+redis
+
+# Utilitaires
+python-decouple
+Pillow
+django-storages
+
+# Calcul scientifique (pour EDO et projections)
+numpy
+scipy
+
+# Production
+gunicorn
+whitenoise
