@@ -39,6 +39,13 @@ class OutboxModel {
 
   /// Message d'erreur en cas d'échec.
   String? lastError;
+
+  /// Données renvoyées par le serveur en cas de conflit (JSON string),
+  /// utilisées par [resolveConflicts] pour décider de la stratégie à appliquer.
+  String? conflictData;
+
+  /// Date à laquelle le serveur a signalé le conflit.
+  DateTime? conflictDetectedAt;
 }
 
 /// Statuts d'un message dans l'Outbox.
@@ -47,4 +54,5 @@ enum OutboxStatus {
   processing,// En cours d'envoi (verrouillé)
   failed,    // Échec après plusieurs tentatives
   synced,    // Synchronisé avec succès
+  conflict,  // Le serveur a refusé l'action car la donnée a changé entre-temps
 }

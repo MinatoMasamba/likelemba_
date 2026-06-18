@@ -27,6 +27,26 @@ class LikelembaDao {
     });
   }
 
+  /// Récupère un groupe par son identifiant côté serveur.
+  Future<LikelembaModel?> getByRemoteId(String remoteId) async {
+    return await _isarService.readTxn((isar) async {
+      return await isar.likelembaModels
+          .filter()
+          .remoteIdEqualTo(remoteId)
+          .findFirst();
+    });
+  }
+
+  /// Insère ou met à jour un groupe reçu du serveur (`pullRemoteUpdates`).
+  ///
+  /// Contrairement à [create], ne réinitialise pas `createdAt`/`cycleStartDate` :
+  /// ces dates proviennent du serveur et doivent être préservées telles quelles.
+  Future<int> upsertFromRemote(LikelembaModel group) async {
+    return await _isarService.writeTxn((isar) async {
+      return await isar.likelembaModels.put(group);
+    });
+  }
+
   /// Récupère tous les groupes triés par date de création.
   Future<List<LikelembaModel>> getAll() async {
     return await _isarService.readTxn((isar) async {

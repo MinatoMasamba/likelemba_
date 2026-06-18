@@ -129,7 +129,7 @@ class LogoutView(APIView):
     """
     Déconnexion (blacklist du refresh token).
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -139,16 +139,15 @@ class LogoutView(APIView):
         responses={205: "Déconnexion réussie", 400: "Token invalide"}
     )
     def post(self, request):
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response(status=status.HTTP_205_RESET_CONTENT)
         try:
-            refresh_token = request.data.get('refresh')
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception:
-            return Response(
-                {"error": "Token invalide ou déjà révoqué."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(status=status.HTTP_205_RESET_CONTENT)
 
 
 class DeviceRegistrationView(generics.CreateAPIView):

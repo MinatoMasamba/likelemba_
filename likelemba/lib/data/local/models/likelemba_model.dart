@@ -92,6 +92,7 @@ class LikelembaModel {
   DateTime? lockedAt;
 
 
+  @Index()
   String? remoteId;
 
   // -------------------------------------------------------------------------

@@ -72,6 +72,16 @@ class UserDao {
     });
   }
 
+  /// Insère ou met à jour un utilisateur reçu du serveur (`pullRemoteUpdates`),
+  /// en utilisant le numéro de téléphone comme clé de fusion (il n'existe pas
+  /// d'identifiant serveur dédié pour [UserModel] : le téléphone joue ce rôle,
+  /// comme déjà pratiqué dans le flux d'authentification).
+  Future<int> upsertFromRemote(UserModel user) async {
+    return await _isarService.writeTxn((isar) async {
+      return await isar.userModels.put(user);
+    });
+  }
+
   /// Met à jour le score de confiance d'un utilisateur.
   Future<void> updateTrustScore(int userId, int newScore) async {
     await _isarService.writeTxn((isar) async {

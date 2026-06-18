@@ -44,6 +44,11 @@ class TransactionModel {
   /// Indique si cette transaction a été synchronisée avec le serveur distant.
   bool isSynced = false;
 
+  /// Identifiant de la transaction côté serveur (UUID), utilisé pour fusionner
+  /// les mises à jour reçues lors d'un `pullRemoteUpdates` sans créer de doublons.
+  @Index()
+  String? remoteId;
+
   // -------------------------------------------------------------------------
   // Relations
   // -------------------------------------------------------------------------

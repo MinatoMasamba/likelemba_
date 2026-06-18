@@ -76,6 +76,33 @@ class OutboxDao {
     });
   }
 
+  /// Marque un message comme étant en conflit avec le serveur.
+  ///
+  /// [serverData] : payload JSON renvoyé par le serveur représentant l'état
+  /// actuel de la ressource, conservé pour permettre à [resolveConflicts]
+  /// d'arbitrer entre la version locale et la version serveur.
+  Future<void> markAsConflict(int id, String serverData) async {
+    await _isarService.writeTxn((isar) async {
+      final msg = await isar.outboxModels.get(id);
+      if (msg != null) {
+        msg.status = OutboxStatus.conflict;
+        msg.conflictData = serverData;
+        msg.conflictDetectedAt = DateTime.now();
+        await isar.outboxModels.put(msg);
+      }
+    });
+  }
+
+  /// Récupère tous les messages actuellement en conflit.
+  Future<List<OutboxModel>> getConflicted() async {
+    return await _isarService.readTxn((isar) async {
+      return await isar.outboxModels
+          .filter()
+          .statusEqualTo(OutboxStatus.conflict)
+          .findAll();
+    });
+  }
+
   /// Réinitialise un message échoué pour qu'il soit retenté.
   Future<void> resetForRetry(int id) async {
     await _isarService.writeTxn((isar) async {

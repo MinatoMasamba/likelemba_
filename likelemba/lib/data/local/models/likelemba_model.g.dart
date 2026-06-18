@@ -113,7 +113,21 @@ const LikelembaModelSchema = CollectionSchema(
   deserialize: _likelembaModelDeserialize,
   deserializeProp: _likelembaModelDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'remoteId': IndexSchema(
+      id: 6301175856541681032,
+      name: r'remoteId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'remoteId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    )
+  },
   links: {
     r'adminLink': LinkSchema(
       id: -1994573226648659972,
@@ -350,6 +364,73 @@ extension LikelembaModelQueryWhere
         upper: upperId,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterWhereClause>
+      remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'remoteId',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterWhereClause>
+      remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'remoteId',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterWhereClause>
+      remoteIdEqualTo(String? remoteId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'remoteId',
+        value: [remoteId],
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterWhereClause>
+      remoteIdNotEqualTo(String? remoteId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'remoteId',
+              lower: [],
+              upper: [remoteId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'remoteId',
+              lower: [remoteId],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'remoteId',
+              lower: [remoteId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'remoteId',
+              lower: [],
+              upper: [remoteId],
+              includeUpper: false,
+            ));
+      }
     });
   }
 }

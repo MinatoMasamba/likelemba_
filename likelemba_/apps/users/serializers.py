@@ -50,6 +50,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('password2')
+        validated_data['phone_number'] = normalize_phone(validated_data['phone_number'])
         user = User.objects.create_user(
             phone_number=validated_data['phone_number'],
             password=validated_data['password'],
@@ -137,11 +138,26 @@ class PhoneVerificationSerializer(serializers.Serializer):
 
 
 
+def normalize_phone(phone: str) -> str:
+    """Convertit 0XXXXXXXXX → +243XXXXXXXXX. Laisse +... inchangé."""
+    phone = phone.strip()
+    if phone.startswith('+'):
+        return phone
+    if phone.startswith('0') and len(phone) == 10:
+        return f'+243{phone[1:]}'
+    if not phone.startswith('0') and len(phone) == 9:
+        return f'+243{phone}'
+    return phone
+
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     Sérialiseur JWT personnalisé qui ajoute les informations utilisateur dans la réponse.
     """
     def validate(self, attrs):
+        # Normalise le numéro avant l'authentification
+        if 'phone_number' in attrs:
+            attrs['phone_number'] = normalize_phone(attrs['phone_number'])
         data = super().validate(attrs)
         user = self.user
         # Ajouter les champs supplémentaires

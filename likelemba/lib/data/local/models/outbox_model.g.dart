@@ -22,38 +22,48 @@ const OutboxModelSchema = CollectionSchema(
       name: r'actionType',
       type: IsarType.string,
     ),
-    r'createdAt': PropertySchema(
+    r'conflictData': PropertySchema(
       id: 1,
+      name: r'conflictData',
+      type: IsarType.string,
+    ),
+    r'conflictDetectedAt': PropertySchema(
+      id: 2,
+      name: r'conflictDetectedAt',
+      type: IsarType.dateTime,
+    ),
+    r'createdAt': PropertySchema(
+      id: 3,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
     r'lastAttemptAt': PropertySchema(
-      id: 2,
+      id: 4,
       name: r'lastAttemptAt',
       type: IsarType.dateTime,
     ),
     r'lastError': PropertySchema(
-      id: 3,
+      id: 5,
       name: r'lastError',
       type: IsarType.string,
     ),
     r'payload': PropertySchema(
-      id: 4,
+      id: 6,
       name: r'payload',
       type: IsarType.string,
     ),
     r'priority': PropertySchema(
-      id: 5,
+      id: 7,
       name: r'priority',
       type: IsarType.long,
     ),
     r'retryCount': PropertySchema(
-      id: 6,
+      id: 8,
       name: r'retryCount',
       type: IsarType.long,
     ),
     r'status': PropertySchema(
-      id: 7,
+      id: 9,
       name: r'status',
       type: IsarType.byte,
       enumMap: _OutboxModelstatusEnumValueMap,
@@ -108,6 +118,12 @@ int _outboxModelEstimateSize(
   var bytesCount = offsets.last;
   bytesCount += 3 + object.actionType.length * 3;
   {
+    final value = object.conflictData;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.lastError;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -124,13 +140,15 @@ void _outboxModelSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.actionType);
-  writer.writeDateTime(offsets[1], object.createdAt);
-  writer.writeDateTime(offsets[2], object.lastAttemptAt);
-  writer.writeString(offsets[3], object.lastError);
-  writer.writeString(offsets[4], object.payload);
-  writer.writeLong(offsets[5], object.priority);
-  writer.writeLong(offsets[6], object.retryCount);
-  writer.writeByte(offsets[7], object.status.index);
+  writer.writeString(offsets[1], object.conflictData);
+  writer.writeDateTime(offsets[2], object.conflictDetectedAt);
+  writer.writeDateTime(offsets[3], object.createdAt);
+  writer.writeDateTime(offsets[4], object.lastAttemptAt);
+  writer.writeString(offsets[5], object.lastError);
+  writer.writeString(offsets[6], object.payload);
+  writer.writeLong(offsets[7], object.priority);
+  writer.writeLong(offsets[8], object.retryCount);
+  writer.writeByte(offsets[9], object.status.index);
 }
 
 OutboxModel _outboxModelDeserialize(
@@ -141,15 +159,17 @@ OutboxModel _outboxModelDeserialize(
 ) {
   final object = OutboxModel();
   object.actionType = reader.readString(offsets[0]);
-  object.createdAt = reader.readDateTime(offsets[1]);
+  object.conflictData = reader.readStringOrNull(offsets[1]);
+  object.conflictDetectedAt = reader.readDateTimeOrNull(offsets[2]);
+  object.createdAt = reader.readDateTime(offsets[3]);
   object.id = id;
-  object.lastAttemptAt = reader.readDateTimeOrNull(offsets[2]);
-  object.lastError = reader.readStringOrNull(offsets[3]);
-  object.payload = reader.readString(offsets[4]);
-  object.priority = reader.readLong(offsets[5]);
-  object.retryCount = reader.readLong(offsets[6]);
+  object.lastAttemptAt = reader.readDateTimeOrNull(offsets[4]);
+  object.lastError = reader.readStringOrNull(offsets[5]);
+  object.payload = reader.readString(offsets[6]);
+  object.priority = reader.readLong(offsets[7]);
+  object.retryCount = reader.readLong(offsets[8]);
   object.status =
-      _OutboxModelstatusValueEnumMap[reader.readByteOrNull(offsets[7])] ??
+      _OutboxModelstatusValueEnumMap[reader.readByteOrNull(offsets[9])] ??
           OutboxStatus.pending;
   return object;
 }
@@ -164,18 +184,22 @@ P _outboxModelDeserializeProp<P>(
     case 0:
       return (reader.readString(offset)) as P;
     case 1:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 5:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 6:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 7:
+      return (reader.readLong(offset)) as P;
+    case 8:
+      return (reader.readLong(offset)) as P;
+    case 9:
       return (_OutboxModelstatusValueEnumMap[reader.readByteOrNull(offset)] ??
           OutboxStatus.pending) as P;
     default:
@@ -188,12 +212,14 @@ const _OutboxModelstatusEnumValueMap = {
   'processing': 1,
   'failed': 2,
   'synced': 3,
+  'conflict': 4,
 };
 const _OutboxModelstatusValueEnumMap = {
   0: OutboxStatus.pending,
   1: OutboxStatus.processing,
   2: OutboxStatus.failed,
   3: OutboxStatus.synced,
+  4: OutboxStatus.conflict,
 };
 
 Id _outboxModelGetId(OutboxModel object) {
@@ -618,6 +644,234 @@ extension OutboxModelQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'actionType',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'conflictData',
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'conflictData',
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'conflictData',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'conflictData',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'conflictData',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'conflictData',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'conflictData',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'conflictData',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'conflictData',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'conflictData',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'conflictData',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDataIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'conflictData',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDetectedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'conflictDetectedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDetectedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'conflictDetectedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDetectedAtEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'conflictDetectedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDetectedAtGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'conflictDetectedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDetectedAtLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'conflictDetectedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterFilterCondition>
+      conflictDetectedAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'conflictDetectedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }
@@ -1279,6 +1533,33 @@ extension OutboxModelQuerySortBy
     });
   }
 
+  QueryBuilder<OutboxModel, OutboxModel, QAfterSortBy> sortByConflictData() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'conflictData', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterSortBy>
+      sortByConflictDataDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'conflictData', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterSortBy>
+      sortByConflictDetectedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'conflictDetectedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterSortBy>
+      sortByConflictDetectedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'conflictDetectedAt', Sort.desc);
+    });
+  }
+
   QueryBuilder<OutboxModel, OutboxModel, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
@@ -1376,6 +1657,33 @@ extension OutboxModelQuerySortThenBy
   QueryBuilder<OutboxModel, OutboxModel, QAfterSortBy> thenByActionTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'actionType', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterSortBy> thenByConflictData() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'conflictData', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterSortBy>
+      thenByConflictDataDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'conflictData', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterSortBy>
+      thenByConflictDetectedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'conflictDetectedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QAfterSortBy>
+      thenByConflictDetectedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'conflictDetectedAt', Sort.desc);
     });
   }
 
@@ -1486,6 +1794,20 @@ extension OutboxModelQueryWhereDistinct
     });
   }
 
+  QueryBuilder<OutboxModel, OutboxModel, QDistinct> distinctByConflictData(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'conflictData', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<OutboxModel, OutboxModel, QDistinct>
+      distinctByConflictDetectedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'conflictDetectedAt');
+    });
+  }
+
   QueryBuilder<OutboxModel, OutboxModel, QDistinct> distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
@@ -1542,6 +1864,19 @@ extension OutboxModelQueryProperty
   QueryBuilder<OutboxModel, String, QQueryOperations> actionTypeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'actionType');
+    });
+  }
+
+  QueryBuilder<OutboxModel, String?, QQueryOperations> conflictDataProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'conflictData');
+    });
+  }
+
+  QueryBuilder<OutboxModel, DateTime?, QQueryOperations>
+      conflictDetectedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'conflictDetectedAt');
     });
   }
 

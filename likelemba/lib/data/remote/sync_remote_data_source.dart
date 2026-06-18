@@ -169,11 +169,60 @@ class SyncRemoteDataSource {
   }
 }
 
+// -----------------------------------------------------------------------------
+// Helpers de parsing tolérants (mêmes conventions que GroupResponse.fromJson)
+// -----------------------------------------------------------------------------
+
+String? _safeStringOrNull(dynamic value) => value?.toString();
+
+double _safeDouble(dynamic value) {
+  if (value == null) return 0.0;
+  if (value is num) return value.toDouble();
+  return double.tryParse(value.toString()) ?? 0.0;
+}
+
+int _safeInt(dynamic value) {
+  if (value == null) return 0;
+  if (value is num) return value.toInt();
+  return int.tryParse(value.toString()) ?? 0;
+}
+
+bool _safeBool(dynamic value) =>
+    value is bool ? value : (value?.toString().toLowerCase() == 'true');
+
+DateTime? _safeDateTimeOrNull(dynamic value) {
+  if (value == null) return null;
+  try {
+    return DateTime.parse(value.toString());
+  } catch (_) {
+    return null;
+  }
+}
+
+/// 📦 Conflit signalé par le serveur lors d'un push.
+///
+/// [outboxId] identifie le message local en conflit ; [serverState] contient
+/// l'état actuel de la ressource côté serveur, utilisé par [resolveConflicts]
+/// pour décider si la donnée locale doit être renvoyée ou abandonnée.
+class SyncConflict {
+  final int outboxId;
+  final Map<String, dynamic> serverState;
+
+  SyncConflict({required this.outboxId, required this.serverState});
+
+  factory SyncConflict.fromJson(Map<String, dynamic> json) {
+    return SyncConflict(
+      outboxId: _safeInt(json['outboxId'] ?? json['id']),
+      serverState: (json['serverState'] as Map<String, dynamic>?) ?? json,
+    );
+  }
+}
+
 /// 📦 Résultat d'un push batch.
 class PushResult {
   final List<int> syncedIds;
   final List<int> failedIds;
-  final List<Map<String, dynamic>> conflicts;
+  final List<SyncConflict> conflicts;
 
   PushResult({
     required this.syncedIds,
@@ -186,18 +235,151 @@ class PushResult {
       syncedIds: (json['syncedIds'] as List<dynamic>?)?.cast<int>() ?? [],
       failedIds: (json['failedIds'] as List<dynamic>?)?.cast<int>() ?? [],
       conflicts: (json['conflicts'] as List<dynamic>?)
-              ?.map((e) => e as Map<String, dynamic>)
+              ?.map((e) => SyncConflict.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
     );
   }
 }
 
+/// 👤 Mise à jour d'un membre reçue du serveur.
+///
+/// Le numéro de téléphone sert de clé de fusion locale : il n'existe pas
+/// d'identifiant serveur dédié pour [UserModel] côté local (voir [UserDao]).
+class MemberDeltaDto {
+  final String phoneNumber;
+  final String? name;
+  final int? trustScore;
+  final double? totalContribution;
+  final bool? isBiometricEnabled;
+  final bool? notificationsEnabled;
+
+  MemberDeltaDto({
+    required this.phoneNumber,
+    this.name,
+    this.trustScore,
+    this.totalContribution,
+    this.isBiometricEnabled,
+    this.notificationsEnabled,
+  });
+
+  factory MemberDeltaDto.fromJson(Map<String, dynamic> json) {
+    return MemberDeltaDto(
+      phoneNumber: json['phone_number']?.toString() ?? '',
+      name: _safeStringOrNull(json['name']),
+      trustScore: json['trust_score'] != null ? _safeInt(json['trust_score']) : null,
+      totalContribution:
+          json['total_contribution'] != null ? _safeDouble(json['total_contribution']) : null,
+      isBiometricEnabled: json['is_biometric_enabled'] as bool?,
+      notificationsEnabled: json['notifications_enabled'] as bool?,
+    );
+  }
+}
+
+/// 👥 Mise à jour d'un groupe reçue du serveur (mêmes clés que [GroupResponse]).
+class GroupDeltaDto {
+  final String id;
+  final String name;
+  final String? description;
+  final double contributionAmount;
+  final double securityFeeRate;
+  final double penaltyRateInitial;
+  final int cycleDurationDays;
+  final int regenerationTargetDays;
+  final double reserveAmount;
+  final int currentBeneficiaryIndex;
+  final bool isLocked;
+  final DateTime? startedAt;
+  final DateTime createdAt;
+
+  GroupDeltaDto({
+    required this.id,
+    required this.name,
+    this.description,
+    required this.contributionAmount,
+    required this.securityFeeRate,
+    required this.penaltyRateInitial,
+    required this.cycleDurationDays,
+    required this.regenerationTargetDays,
+    required this.reserveAmount,
+    required this.currentBeneficiaryIndex,
+    required this.isLocked,
+    this.startedAt,
+    required this.createdAt,
+  });
+
+  factory GroupDeltaDto.fromJson(Map<String, dynamic> json) {
+    return GroupDeltaDto(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      description: _safeStringOrNull(json['description']),
+      contributionAmount: _safeDouble(json['contribution_amount']),
+      securityFeeRate: _safeDouble(json['security_fee_rate']),
+      penaltyRateInitial: _safeDouble(json['penalty_rate_initial']),
+      cycleDurationDays: _safeInt(json['cycle_duration_days']),
+      regenerationTargetDays: _safeInt(json['regeneration_target_days']),
+      reserveAmount: _safeDouble(json['reserve_amount']),
+      currentBeneficiaryIndex: _safeInt(json['current_beneficiary_index']),
+      isLocked: _safeBool(json['is_locked']),
+      startedAt: _safeDateTimeOrNull(json['started_at']),
+      createdAt: _safeDateTimeOrNull(json['created_at']) ?? DateTime.now(),
+    );
+  }
+}
+
+/// 💸 Transaction reçue du serveur.
+///
+/// [groupId] référence [GroupDeltaDto.id] / `LikelembaModel.remoteId`.
+/// [userPhoneNumber] et [recipientPhoneNumber] référencent `UserModel.phoneNumber`.
+class TransactionDeltaDto {
+  final String id;
+  final String groupId;
+  final String userPhoneNumber;
+  final String? recipientPhoneNumber;
+  final double amount;
+  final String currency;
+  final String type;
+  final String status;
+  final String? note;
+  final String? proofImagePath;
+  final DateTime timestamp;
+
+  TransactionDeltaDto({
+    required this.id,
+    required this.groupId,
+    required this.userPhoneNumber,
+    this.recipientPhoneNumber,
+    required this.amount,
+    required this.currency,
+    required this.type,
+    required this.status,
+    this.note,
+    this.proofImagePath,
+    required this.timestamp,
+  });
+
+  factory TransactionDeltaDto.fromJson(Map<String, dynamic> json) {
+    return TransactionDeltaDto(
+      id: json['id']?.toString() ?? '',
+      groupId: json['group_id']?.toString() ?? '',
+      userPhoneNumber: json['user_phone_number']?.toString() ?? '',
+      recipientPhoneNumber: _safeStringOrNull(json['recipient_phone_number']),
+      amount: _safeDouble(json['amount']),
+      currency: json['currency']?.toString() ?? 'cdf',
+      type: json['type']?.toString() ?? 'contribution',
+      status: json['status']?.toString() ?? 'pending',
+      note: _safeStringOrNull(json['note']),
+      proofImagePath: _safeStringOrNull(json['proof_image_path']),
+      timestamp: _safeDateTimeOrNull(json['timestamp']) ?? DateTime.now(),
+    );
+  }
+}
+
 /// 📥 Delta de synchronisation.
 class SyncDelta {
-  final List<Map<String, dynamic>> transactions;
-  final List<Map<String, dynamic>> memberUpdates;
-  final List<Map<String, dynamic>> groupUpdates;
+  final List<TransactionDeltaDto> transactions;
+  final List<MemberDeltaDto> memberUpdates;
+  final List<GroupDeltaDto> groupUpdates;
 
   SyncDelta({
     required this.transactions,
@@ -208,15 +390,15 @@ class SyncDelta {
   factory SyncDelta.fromJson(Map<String, dynamic> json) {
     return SyncDelta(
       transactions: (json['transactions'] as List<dynamic>?)
-              ?.map((e) => e as Map<String, dynamic>)
+              ?.map((e) => TransactionDeltaDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       memberUpdates: (json['memberUpdates'] as List<dynamic>?)
-              ?.map((e) => e as Map<String, dynamic>)
+              ?.map((e) => MemberDeltaDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       groupUpdates: (json['groupUpdates'] as List<dynamic>?)
-              ?.map((e) => e as Map<String, dynamic>)
+              ?.map((e) => GroupDeltaDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
     );

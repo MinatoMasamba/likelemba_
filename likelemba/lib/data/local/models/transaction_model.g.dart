@@ -43,19 +43,24 @@ const TransactionModelSchema = CollectionSchema(
       name: r'proofImagePath',
       type: IsarType.string,
     ),
-    r'status': PropertySchema(
+    r'remoteId': PropertySchema(
       id: 5,
+      name: r'remoteId',
+      type: IsarType.string,
+    ),
+    r'status': PropertySchema(
+      id: 6,
       name: r'status',
       type: IsarType.byte,
       enumMap: _TransactionModelstatusEnumValueMap,
     ),
     r'timestamp': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'timestamp',
       type: IsarType.dateTime,
     ),
     r'type': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'type',
       type: IsarType.byte,
       enumMap: _TransactionModeltypeEnumValueMap,
@@ -77,6 +82,19 @@ const TransactionModelSchema = CollectionSchema(
           name: r'timestamp',
           type: IndexType.value,
           caseSensitive: false,
+        )
+      ],
+    ),
+    r'remoteId': IndexSchema(
+      id: 6301175856541681032,
+      name: r'remoteId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'remoteId',
+          type: IndexType.hash,
+          caseSensitive: true,
         )
       ],
     )
@@ -126,6 +144,12 @@ int _transactionModelEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.remoteId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -140,9 +164,10 @@ void _transactionModelSerialize(
   writer.writeBool(offsets[2], object.isSynced);
   writer.writeString(offsets[3], object.note);
   writer.writeString(offsets[4], object.proofImagePath);
-  writer.writeByte(offsets[5], object.status.index);
-  writer.writeDateTime(offsets[6], object.timestamp);
-  writer.writeByte(offsets[7], object.type.index);
+  writer.writeString(offsets[5], object.remoteId);
+  writer.writeByte(offsets[6], object.status.index);
+  writer.writeDateTime(offsets[7], object.timestamp);
+  writer.writeByte(offsets[8], object.type.index);
 }
 
 TransactionModel _transactionModelDeserialize(
@@ -160,12 +185,13 @@ TransactionModel _transactionModelDeserialize(
   object.isSynced = reader.readBool(offsets[2]);
   object.note = reader.readStringOrNull(offsets[3]);
   object.proofImagePath = reader.readStringOrNull(offsets[4]);
+  object.remoteId = reader.readStringOrNull(offsets[5]);
   object.status =
-      _TransactionModelstatusValueEnumMap[reader.readByteOrNull(offsets[5])] ??
+      _TransactionModelstatusValueEnumMap[reader.readByteOrNull(offsets[6])] ??
           TransactionStatus.pending;
-  object.timestamp = reader.readDateTime(offsets[6]);
+  object.timestamp = reader.readDateTime(offsets[7]);
   object.type =
-      _TransactionModeltypeValueEnumMap[reader.readByteOrNull(offsets[7])] ??
+      _TransactionModeltypeValueEnumMap[reader.readByteOrNull(offsets[8])] ??
           TransactionType.contribution;
   return object;
 }
@@ -190,12 +216,14 @@ P _transactionModelDeserializeProp<P>(
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     case 5:
+      return (reader.readStringOrNull(offset)) as P;
+    case 6:
       return (_TransactionModelstatusValueEnumMap[
               reader.readByteOrNull(offset)] ??
           TransactionStatus.pending) as P;
-    case 6:
-      return (reader.readDateTime(offset)) as P;
     case 7:
+      return (reader.readDateTime(offset)) as P;
+    case 8:
       return (_TransactionModeltypeValueEnumMap[
               reader.readByteOrNull(offset)] ??
           TransactionType.contribution) as P;
@@ -432,6 +460,73 @@ extension TransactionModelQueryWhere
         upper: [upperTimestamp],
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterWhereClause>
+      remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'remoteId',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterWhereClause>
+      remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'remoteId',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterWhereClause>
+      remoteIdEqualTo(String? remoteId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'remoteId',
+        value: [remoteId],
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterWhereClause>
+      remoteIdNotEqualTo(String? remoteId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'remoteId',
+              lower: [],
+              upper: [remoteId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'remoteId',
+              lower: [remoteId],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'remoteId',
+              lower: [remoteId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'remoteId',
+              lower: [],
+              upper: [remoteId],
+              includeUpper: false,
+            ));
+      }
     });
   }
 }
@@ -935,6 +1030,160 @@ extension TransactionModelQueryFilter
   }
 
   QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'remoteId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'remoteId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
+      remoteIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'remoteId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterFilterCondition>
       statusEqualTo(TransactionStatus value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1223,6 +1472,20 @@ extension TransactionModelQuerySortBy
   }
 
   QueryBuilder<TransactionModel, TransactionModel, QAfterSortBy>
+      sortByRemoteId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterSortBy>
+      sortByRemoteIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterSortBy>
       sortByStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'status', Sort.asc);
@@ -1349,6 +1612,20 @@ extension TransactionModelQuerySortThenBy
   }
 
   QueryBuilder<TransactionModel, TransactionModel, QAfterSortBy>
+      thenByRemoteId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterSortBy>
+      thenByRemoteIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QAfterSortBy>
       thenByStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'status', Sort.asc);
@@ -1429,6 +1706,13 @@ extension TransactionModelQueryWhereDistinct
   }
 
   QueryBuilder<TransactionModel, TransactionModel, QDistinct>
+      distinctByRemoteId({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'remoteId', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<TransactionModel, TransactionModel, QDistinct>
       distinctByStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'status');
@@ -1486,6 +1770,12 @@ extension TransactionModelQueryProperty
       proofImagePathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'proofImagePath');
+    });
+  }
+
+  QueryBuilder<TransactionModel, String?, QQueryOperations> remoteIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'remoteId');
     });
   }
 

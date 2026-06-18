@@ -41,6 +41,19 @@ class TransactionDao {
     });
   }
 
+  /// Récupère une transaction par son identifiant côté serveur.
+  ///
+  /// Utilisé pour fusionner les mises à jour distantes (`pullRemoteUpdates`)
+  /// sans créer de doublons.
+  Future<TransactionModel?> getByRemoteId(String remoteId) async {
+    return await _isarService.readTxn((isar) async {
+      return await isar.transactionModels
+          .filter()
+          .remoteIdEqualTo(remoteId)
+          .findFirst();
+    });
+  }
+
   /// Récupère les transactions d'un groupe spécifique, paginées par date décroissante.
   ///
   /// [groupId] : Identifiant du groupe.
@@ -129,6 +142,16 @@ class TransactionDao {
     }
     return await _isarService.writeTxn((isar) async {
       transaction.timestamp = DateTime.now();
+      return await isar.transactionModels.put(transaction);
+    });
+  }
+
+  /// Insère ou met à jour une transaction reçue du serveur (`pullRemoteUpdates`).
+  ///
+  /// Contrairement à [create], ne réécrit pas le `timestamp` : celui-ci provient
+  /// du serveur et doit être préservé tel quel.
+  Future<int> upsertFromRemote(TransactionModel transaction) async {
+    return await _isarService.writeTxn((isar) async {
       return await isar.transactionModels.put(transaction);
     });
   }
