@@ -6,6 +6,8 @@ import 'package:likelemba/domain/usecases/tontine/create_group_use_case.dart';
 
 import '../../domain/usecases/auth/login_use_case.dart';
 import '../../domain/usecases/auth/register_biometric_use_case.dart';
+import '../../domain/usecases/auth/toggle_notifications_use_case.dart';
+import '../../domain/usecases/auth/change_pin_use_case.dart';
 import '../../domain/usecases/tontine/calculate_cycle_projection_use_case.dart';
 import '../../domain/usecases/tontine/process_member_exit_use_case.dart';
 import '../../domain/usecases/tontine/get_queue_position_use_case.dart';
@@ -31,6 +33,18 @@ final registerBiometricUseCaseProvider = Provider<RegisterBiometricUseCase>((ref
   print('registerBiometricUseCaseProvider - Création de RegisterBiometricUseCase.');
   final authRepo = ref.watch(authRepositoryProvider);
   return RegisterBiometricUseCase(authRepo);
+});
+
+final toggleNotificationsUseCaseProvider = Provider<ToggleNotificationsUseCase>((ref) {
+  print('toggleNotificationsUseCaseProvider - Création de ToggleNotificationsUseCase.');
+  final authRepo = ref.watch(authRepositoryProvider);
+  return ToggleNotificationsUseCase(authRepo);
+});
+
+final changePinUseCaseProvider = Provider<ChangePinUseCase>((ref) {
+  print('changePinUseCaseProvider - Création de ChangePinUseCase.');
+  final authRepo = ref.watch(authRepositoryProvider);
+  return ChangePinUseCase(authRepo);
 });
 
 final registerUserUseCaseProvider = Provider<RegisterUserUseCase>((ref) {

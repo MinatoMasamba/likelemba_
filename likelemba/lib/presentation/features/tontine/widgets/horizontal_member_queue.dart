@@ -7,8 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:likelemba/presentation/shared/widgets/liquid_glass_card.dart';
 import 'package:logger/logger.dart';
 import '../../../../application/notifiers/tontine_notifier.dart';
-import '../../../../core/theme/liquid_glass_theme.dart';
-import '../../../../domain/entities/likelemba_group.dart';
 import '../../../../domain/entities/user.dart';
 import 'member_risk_badge.dart' hide RiskLevel;
 
@@ -25,111 +23,63 @@ class HorizontalMemberQueue extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     _logger.d('$tag.build - Construction de la file d\'attente.');
-    final tontineState = ref.watch(tontineNotifierProvider);
-    final group = tontineState.value?.selectedGroup;
-    final members = _getMemberList(group);
+    final group = ref.watch(tontineNotifierProvider).value?.selectedGroup;
+    final membersAsync = ref.watch(groupMembersWithProgressProvider);
 
-    if (members.isEmpty) {
-      return const LiquidGlassCard(
+    return membersAsync.when(
+      loading: () => const LiquidGlassCard(
         padding: EdgeInsets.all(20),
         child: Center(
-          child: Text(
-            'Aucun membre dans la file',
-            style: TextStyle(color: Colors.white54),
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
-      );
-    }
-
-    return SizedBox(
-      height: 140,
-      child: RepaintBoundary(
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          itemCount: members.length,
-          itemBuilder: (context, index) {
-            final member = members[index];
-            final isCurrentBeneficiary = index == group?.currentBeneficiaryIndex;
-            return _QueueItem(
-              member: member,
-              rank: index + 1,
-              isCurrentBeneficiary: isCurrentBeneficiary,
-              contributionProgress: _computeContributionProgress(member, group),
-            );
-          },
+      ),
+      error: (_, __) => const LiquidGlassCard(
+        padding: EdgeInsets.all(20),
+        child: Center(
+          child: Text('Erreur de chargement des membres',
+              style: TextStyle(color: Colors.white54)),
         ),
       ),
+      data: (items) {
+        if (items.isEmpty) {
+          return const LiquidGlassCard(
+            padding: EdgeInsets.all(20),
+            child: Center(
+              child: Text(
+                'Aucun membre dans la file',
+                style: TextStyle(color: Colors.white54),
+              ),
+            ),
+          );
+        }
+
+        return SizedBox(
+          height: 140,
+          child: RepaintBoundary(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                final isCurrentBeneficiary =
+                    index == group?.currentBeneficiaryIndex;
+                return _QueueItem(
+                  member: item.member,
+                  rank: index + 1,
+                  isCurrentBeneficiary: isCurrentBeneficiary,
+                  contributionProgress: item.contributionProgress,
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
-  }
-
-  List<User> _getMemberList(LikelembaGroup? group) {
-    // Simulation : à remplacer par le chargement réel des membres via le repository
-    // Dans l'implémentation réelle, on récupère les User à partir des memberIds
-    const method = '_getMemberList';
-    _logger.d('$tag.$method - Récupération des membres simulée.');
-    return [
-      const User(
-        id: 1,
-        name: 'Moi',
-        phoneNumber: '+243123456789',
-        role: UserRole.member,
-        status: UserStatus.active,
-        trustScore: 85,
-        totalContribution: 5000,
-        isBiometricEnabled: true,
-      ),
-      const User(
-        id: 2,
-        name: 'Jean P.',
-        phoneNumber: '+243987654321',
-        role: UserRole.member,
-        status: UserStatus.active,
-        trustScore: 70,
-        totalContribution: 4500,
-        isBiometricEnabled: false,
-      ),
-      const User(
-        id: 3,
-        name: 'Marie L.',
-        phoneNumber: '+243555666777',
-        role: UserRole.member,
-        status: UserStatus.active,
-        trustScore: 95,
-        totalContribution: 5200,
-        isBiometricEnabled: true,
-      ),
-      const User(
-        id: 4,
-        name: 'Marc A.',
-        phoneNumber: '+243111222333',
-        role: UserRole.member,
-        status: UserStatus.active,
-        trustScore: 45,
-        totalContribution: 3000,
-        isBiometricEnabled: false,
-      ),
-      const User(
-        id: 5,
-        name: 'Julie K.',
-        phoneNumber: '+243444555666',
-        role: UserRole.member,
-        status: UserStatus.active,
-        trustScore: 60,
-        totalContribution: 3800,
-        isBiometricEnabled: true,
-      ),
-    ];
-  }
-
-  double _computeContributionProgress(User member, LikelembaGroup? group) {
-    if (group == null) return 0.0;
-    // Simulation : calculer le ratio cotisations versées / attendues
-    // À remplacer par un appel au TransactionRepository
-    const method = '_computeContributionProgress';
-    final progress = member.trustScore / 100.0; // Exemple simplifié
-    _logger.d('$tag.$method - Progression pour ${member.name}: $progress');
-    return progress.clamp(0.0, 1.0);
   }
 }
 

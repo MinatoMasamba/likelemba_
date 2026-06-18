@@ -47,9 +47,23 @@ class _ReserveFundChartState extends ConsumerState<ReserveFundChart> with Single
 
   void _showChartDetails() {
     HapticFeedback.mediumImpact();
-    const method = '_showChartDetails';
-    widget._logger.i('$ReserveFundChart.tag.$method - Affichage détail graphique.');
-    // TODO: Ouvrir une vue agrandie du graphique
+    widget._logger.i('${ReserveFundChart.tag}._showChartDetails - Affichage détail graphique.');
+
+    final tontineState = ref.read(tontineNotifierProvider);
+    final group = tontineState.value?.selectedGroup;
+    final projection = tontineState.value?.projections[group?.id ?? ''];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ChartDetailSheet(
+        group: group,
+        projection: projection,
+        buildChartData: _buildChartData,
+        buildLegend: _buildLegend,
+      ),
+    );
   }
 
   @override
@@ -66,12 +80,16 @@ class _ReserveFundChartState extends ConsumerState<ReserveFundChart> with Single
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Fonds de réserve F(t)',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                const Expanded(
+                  child: Text(
+                    'Fonds de réserve F(t)',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   MoneyFormatter.formatCDF(group?.currentReserveFund ?? 0),
                   style: const TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold),
@@ -267,6 +285,182 @@ class _ReserveFundChartState extends ConsumerState<ReserveFundChart> with Single
           ],
         ),
       ],
+    );
+  }
+}
+
+// ── Vue agrandie du graphique ──────────────────────────────────────────────
+class _ChartDetailSheet extends StatefulWidget {
+  final LikelembaGroup? group;
+  final FundProjection? projection;
+  final LineChartData Function(LikelembaGroup?, FundProjection?, double) buildChartData;
+  final Widget Function(LikelembaGroup?) buildLegend;
+
+  const _ChartDetailSheet({
+    required this.group,
+    required this.projection,
+    required this.buildChartData,
+    required this.buildLegend,
+  });
+
+  @override
+  State<_ChartDetailSheet> createState() => _ChartDetailSheetState();
+}
+
+class _ChartDetailSheetState extends State<_ChartDetailSheet>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
+      ..forward();
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOutCubic);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final group = widget.group;
+    final criticalThreshold = (group?.netJackpot ?? 0) * 0.2;
+    final currentFund = group?.currentReserveFund ?? 0;
+    final isHealthy = currentFund >= criticalThreshold;
+    final dailyInflow = group != null
+        ? group.memberCount * group.dailyContribution * group.securityFeeRate
+        : 0.0;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.82,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0A1628),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        children: [
+          // Poignée
+          const SizedBox(height: 12),
+          Container(
+            width: 40, height: 4,
+            decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+          ),
+          const SizedBox(height: 16),
+          // Titre + statut
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                const Text(
+                  'Évolution du Fonds F(t)',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: (isHealthy ? Colors.greenAccent : Colors.orangeAccent).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: (isHealthy ? Colors.greenAccent : Colors.orangeAccent).withOpacity(0.4),
+                    ),
+                  ),
+                  child: Text(
+                    isHealthy ? 'SOLVABLE' : 'ALERTE',
+                    style: TextStyle(
+                      color: isHealthy ? Colors.greenAccent : Colors.orangeAccent,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Graphique agrandi
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: AnimatedBuilder(
+                animation: _anim,
+                builder: (_, __) => LineChart(
+                  widget.buildChartData(widget.group, widget.projection, _anim.value),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Légende
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: widget.buildLegend(widget.group),
+          ),
+          const SizedBox(height: 20),
+          // KPIs bas de fiche
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                _KpiTile(
+                  label: 'Fonds actuel',
+                  value: MoneyFormatter.formatCDF(currentFund),
+                  color: Colors.cyanAccent,
+                ),
+                const SizedBox(width: 12),
+                _KpiTile(
+                  label: 'Seuil critique',
+                  value: MoneyFormatter.formatCDF(criticalThreshold),
+                  color: Colors.redAccent,
+                ),
+                const SizedBox(width: 12),
+                _KpiTile(
+                  label: 'Afflux/jour',
+                  value: '${dailyInflow.toStringAsFixed(0)} FC',
+                  color: Colors.greenAccent,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
+        ],
+      ),
+    );
+  }
+}
+
+class _KpiTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _KpiTile({required this.label, required this.value, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withOpacity(0.25)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(color: Colors.white38, fontSize: 10)),
+            const SizedBox(height: 4),
+            Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
+          ],
+        ),
+      ),
     );
   }
 }

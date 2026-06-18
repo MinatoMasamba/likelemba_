@@ -27,6 +27,7 @@ import '../../core/network/api_client.dart';
 import '../../core/network/dio_client.dart';
 import '../../core/network/connectivity_monitor.dart';
 
+import '../../application/notifiers/auth_notifier.dart';
 import 'isar_provider.dart';
 
 // -----------------------------------------------------------------------------
@@ -69,10 +70,14 @@ final outboxDaoProvider = Provider<OutboxDao>((ref) {
 
 final dioClientProvider = Provider<DioClient>((ref) {
   print('dioClientProvider - Création du DioClient.');
-  const baseUrl = 'http://192.168.90.244:8080/api/';
+  const baseUrl = 'http://192.168.72.58:8000/api/';
   return DioClient(
     baseUrl: baseUrl,
     getToken: () => ref.read(authTokenProvider),
+    onUnauthorized: () {
+      print('dioClientProvider - 401 reçu, déconnexion automatique.');
+      ref.read(authNotifierProvider.notifier).logout();
+    },
   );
 });
 

@@ -9,7 +9,12 @@ import 'package:likelemba/domain/entities/likelemba_group.dart';
 import 'package:likelemba/presentation/features/tontine/widgets/solvency_shield_widget.dart';
 import 'package:likelemba/presentation/shared/widgets/money_display.dart';
 import 'package:logger/logger.dart';
+import '../../../../application/notifiers/auth_notifier.dart';
 import '../../../../application/notifiers/tontine_notifier.dart';
+import '../../../../application/notifiers/transaction_notifier.dart';
+import 'join_group_screen.dart';
+import '../../settings/settings_screen.dart';
+import '../../transactions/screens/transaction_history_screen.dart';
 
 import '../../../../core/theme/liquid_glass_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
@@ -49,8 +54,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     const method = '_loadGroupData';
     _logger.i('$tag.$method - Chargement des données du groupe.');
     try {
-      // TODO: Récupérer l'ID du groupe actif depuis le provider ou les préférences
-      // await ref.read(tontineNotifierProvider.notifier).selectGroup('groupId');
+      final authState = ref.read(authNotifierProvider).value;
+      final userId = authState?.currentUser?.id;
+      if (userId == null) {
+        _logger.w('$tag.$method - Utilisateur non connecté, chargement annulé.');
+        return;
+      }
+      await ref.read(tontineNotifierProvider.notifier).loadMemberGroups(userId);
     } catch (e, stack) {
       _logger.e('$tag.$method - Erreur: $e', error: e, stackTrace: stack);
     }
@@ -61,35 +71,135 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     setState(() => _isLoading = true);
     _logger.i('$tag.$method - Action de cotisation déclenchée.');
     try {
-      // TODO: Appeler le use case de cotisation
-      // await ref.read(submitContributionUseCaseProvider).call(...);
+      final authState = ref.read(authNotifierProvider).value;
+      final tontineState = ref.read(tontineNotifierProvider).value;
+      final user = authState?.currentUser;
+      final group = tontineState?.selectedGroup;
+
+      if (user == null || group == null) {
+        if (mounted) ErrorSnackbar.show(context, 'Aucun groupe actif sélectionné.');
+        return;
+      }
+
+      await ref.read(transactionNotifierProvider.notifier).submitContribution(
+            groupId: group.id.toString(),
+            userId: user.id.toString(),
+            amount: group.dailyContribution,
+          );
+
       HapticFeedback.mediumImpact();
-      ErrorSnackbar.show(context, 'Cotisation enregistrée (simulation).');
+      if (mounted) ErrorSnackbar.show(context, 'Cotisation enregistrée avec succès.');
     } catch (e, stack) {
       _logger.e('$tag.$method - Erreur: $e', error: e, stackTrace: stack);
-      ErrorSnackbar.show(context, 'Erreur lors de la cotisation.');
+      if (mounted) ErrorSnackbar.show(context, 'Erreur lors de la cotisation.');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _handleRequestPayout() async {
     const method = '_handleRequestPayout';
-    _logger.i('$tag.$method - Demande de réception.');
-    // Afficher le dialogue de la "Formule de Paix"
-    await _showExitSimulationDialog();
+    _logger.i('$tag.$method - Demande de réception de la cagnotte.');
+
+    final tontineState = ref.read(tontineNotifierProvider).value;
+    final authState = ref.read(authNotifierProvider).value;
+    final group = tontineState?.selectedGroup;
+    final user = authState?.currentUser;
+
+    if (group == null || user == null) {
+      ErrorSnackbar.show(context, 'Aucun groupe actif.');
+      return;
+    }
+
+    // Confirmer avant d'envoyer la demande à l'admin
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0A2540),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Demander la réception ?', style: TextStyle(color: Colors.white)),
+        content: Text(
+          'Vous demandez à recevoir la cagnotte de ${group.groupName}.\n\n'
+          'L\'administrateur devra valider votre demande.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Annuler', style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Confirmer', style: TextStyle(color: Colors.cyanAccent)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(transactionNotifierProvider.notifier).requestPayout(
+            groupId: group.id.toString(),
+            userId: user.id.toString(),
+          );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Demande de réception envoyée à l\'administrateur.'),
+            backgroundColor: Color(0xFF00C9A7),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e, stack) {
+      _logger.e('$tag.$method - Erreur: $e', error: e, stackTrace: stack);
+      if (mounted) ErrorSnackbar.show(context, 'Impossible d\'envoyer la demande.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _showExitSimulationDialog() async {
+    final authState = ref.read(authNotifierProvider).value;
+    final tontineState = ref.read(tontineNotifierProvider).value;
+    final user = authState?.currentUser;
+    final group = tontineState?.selectedGroup;
+
+    if (user == null || group == null) {
+      if (mounted) ErrorSnackbar.show(context, 'Aucun groupe actif.');
+      return;
+    }
+
+    // Calcul du remboursement réel (pénalité dégressive)
+    final refundAmount = await ref
+        .read(transactionNotifierProvider.notifier)
+        .requestExit(group.id.toString(), user.id.toString());
+
+    final totalContributed = group.elapsedDays * group.dailyContribution;
+    final penaltyRate = group.basePenaltyRate *
+        (1 - group.elapsedDays / group.cycleDurationDays).clamp(0.0, 1.0);
+    final effectiveRefund = refundAmount ?? (totalContributed * (1 - penaltyRate));
+
+    if (!mounted) return;
+
     final result = await showDialog<ExitSimulationResult>(
       context: context,
       barrierDismissible: true,
-      builder: (context) => const _ExitSimulationDialog(),
+      builder: (context) => _ExitSimulationDialog(
+        totalContributed: totalContributed,
+        penaltyRate: penaltyRate,
+        refundAmount: effectiveRefund,
+      ),
     );
-    if (result != null) {
-      _logger.i('$tag._showExitSimulationDialog - Confirmation: ${result.confirmed}');
-      if (result.confirmed) {
-        // TODO: Déclencher la sortie effective
+
+    if (result != null && result.confirmed) {
+      _logger.i('$tag._showExitSimulationDialog - Sortie confirmée par ${user.name}');
+      await ref
+          .read(tontineNotifierProvider.notifier)
+          .processMemberExit(user.id.toString());
+      if (mounted) {
         ErrorSnackbar.show(context, 'Demande de réception envoyée à l\'administrateur.');
       }
     }
@@ -108,12 +218,32 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         title: const Text(AppStrings.appName, style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            onPressed: () => _logger.i('$tag - Statistiques EDO'),
-            icon: const Icon(Icons.analytics_outlined),
+            onPressed: () {
+              final group =
+                  ref.read(tontineNotifierProvider).value?.selectedGroup;
+              if (group != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TransactionHistoryScreen(
+                      groupId: group.id.toString(),
+                    ),
+                  ),
+                );
+              } else {
+                ErrorSnackbar.show(context, 'Aucun groupe actif.');
+              }
+            },
+            icon: const Icon(Icons.history_rounded, color: Colors.white),
+            tooltip: 'Historique des transactions',
           ),
           IconButton(
-            onPressed: () => _logger.i('$tag - Profil'),
-            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
+            icon: const Icon(Icons.account_circle_outlined, color: Colors.white),
+            tooltip: 'Paramètres',
           ),
         ],
       ),
@@ -144,12 +274,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Ma Cagnotte Attendue',
-                              style: TextStyle(color: Colors.white70),
+                            const Expanded(
+                              child: Text(
+                                'Ma Cagnotte Attendue',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(color: Colors.white70),
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
@@ -194,6 +328,37 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                   ),
 
+                  const SizedBox(height: 12),
+
+                  // Bouton "Rejoindre un groupe"
+                  FadeSlideTransition(
+                    delayMs: 260,
+                    child: GlassButton(
+                      label: 'Rejoindre un Likelemba',
+                      icon: Icons.group_add_rounded,
+                      isPrimary: false,
+                      impact: HapticImpact.medium,
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const JoinGroupScreen()),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Bouton "Simuler une sortie anticipée"
+                  FadeSlideTransition(
+                    delayMs: 320,
+                    child: GlassButton(
+                      label: 'Simuler une sortie',
+                      icon: Icons.exit_to_app_rounded,
+                      isPrimary: false,
+                      impact: HapticImpact.medium,
+                      onPressed: _showExitSimulationDialog,
+                    ),
+                  ),
+
                   const SizedBox(height: 30),
 
                   // Bouclier de Solvabilité (EDO)
@@ -232,10 +397,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _handleContribution,
-        backgroundColor: Colors.cyanAccent.withOpacity(0.8),
-        label: const Text('Cotiser', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        icon: const Icon(Icons.add, color: Colors.black),
+        onPressed: _isLoading ? null : _handleContribution,
+        backgroundColor: Colors.cyanAccent.withOpacity(_isLoading ? 0.4 : 0.8),
+        label: Text(
+          _isLoading ? 'En cours...' : 'Cotiser',
+          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        icon: Icon(_isLoading ? Icons.hourglass_empty : Icons.add, color: Colors.black),
       ),
     );
   }
@@ -243,13 +411,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   String _formatPenalty(LikelembaGroup? group) {
     if (group == null) return '-- %';
     final elapsed = group.elapsedDays;
-    final penalty = group.basePenaltyRate * (1 - elapsed / group.cycleDurationDays);
+    final penalty = group.basePenaltyRate * (1 - elapsed / group.cycleDurationDays).clamp(0.0, 1.0);
     return '${(penalty * 100).toStringAsFixed(1)}%';
   }
 
   String _formatEstimatedDate(LikelembaGroup? group) {
     if (group == null) return '--';
-    // Simulation simple : date de fin de cycle
     final endDate = group.cycleStartDate.add(Duration(days: group.cycleDurationDays));
     return '${endDate.day}/${endDate.month}/${endDate.year}';
   }
@@ -290,33 +457,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         children: [
           Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
           const SizedBox(height: 5),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );
   }
 }
 
-/// Dialogue de simulation de sortie ("Formule de Paix")
-class _ExitSimulationDialog extends StatefulWidget {
-  const _ExitSimulationDialog();
+/// Dialogue de simulation de sortie ("Formule de Paix") avec données réelles.
+class _ExitSimulationDialog extends StatelessWidget {
+  final double totalContributed;
+  final double penaltyRate;
+  final double refundAmount;
 
-  @override
-  State<_ExitSimulationDialog> createState() => _ExitSimulationDialogState();
-}
-
-class _ExitSimulationDialogState extends State<_ExitSimulationDialog> {
-  static const String tag = '_ExitSimulationDialog';
-  final Logger _logger = Logger();
-  bool _confirmed = false;
+  const _ExitSimulationDialog({
+    required this.totalContributed,
+    required this.penaltyRate,
+    required this.refundAmount,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Valeurs simulées (à remplacer par les données réelles du provider)
-    const totalContributed = 5000.0;
-    const penaltyRate = 0.15;
-    final penaltyAmount = totalContributed * penaltyRate;
-    final refund = totalContributed - penaltyAmount;
+    final penaltyAmount = totalContributed - refundAmount;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -336,7 +503,7 @@ class _ExitSimulationDialogState extends State<_ExitSimulationDialog> {
             _buildInfoRow('Pénalité actuelle', '${(penaltyRate * 100).toStringAsFixed(1)}%'),
             _buildInfoRow('Montant retenu', MoneyFormatter.formatCDF(penaltyAmount)),
             const Divider(color: Colors.white24, height: 32),
-            _buildInfoRow('Remboursement net', MoneyFormatter.formatCDF(refund), isHighlight: true),
+            _buildInfoRow('Remboursement net', MoneyFormatter.formatCDF(refundAmount), isHighlight: true),
             const SizedBox(height: 24),
             Text(
               'R = Argent Versé - (Pénalité × Temps)',
@@ -356,10 +523,7 @@ class _ExitSimulationDialogState extends State<_ExitSimulationDialog> {
                   child: GlassButton(
                     label: 'Confirmer',
                     impact: HapticImpact.heavy,
-                    onPressed: () {
-                      _logger.i('$tag - Sortie confirmée.');
-                      Navigator.pop(context, ExitSimulationResult(confirmed: true));
-                    },
+                    onPressed: () => Navigator.pop(context, ExitSimulationResult(confirmed: true)),
                   ),
                 ),
               ],

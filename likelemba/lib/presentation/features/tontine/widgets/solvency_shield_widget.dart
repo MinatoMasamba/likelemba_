@@ -148,41 +148,57 @@ class _SolvencyShieldWidgetState extends State<SolvencyShieldWidget> {
                       const SizedBox(height: 8),
                       // Détails du fonds
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Fonds actuel',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
-                              fontSize: 12,
+                          Flexible(
+                            child: Text(
+                              'Fonds actuel',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.6),
+                                fontSize: 12,
+                              ),
                             ),
                           ),
-                          Text(
-                            MoneyFormatter.formatCDF(widget.currentReserveFund),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              MoneyFormatter.formatCDF(widget.currentReserveFund),
+                              textAlign: TextAlign.right,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Objectif sécurité',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
-                              fontSize: 12,
+                          Flexible(
+                            child: Text(
+                              'Objectif sécurité',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.6),
+                                fontSize: 12,
+                              ),
                             ),
                           ),
-                          Text(
-                            MoneyFormatter.formatCDF(widget.targetReserveFund),
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              MoneyFormatter.formatCDF(widget.targetReserveFund),
+                              textAlign: TextAlign.right,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ],

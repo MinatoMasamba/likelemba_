@@ -308,7 +308,7 @@ class _PresentationLikelembaState extends ConsumerState<PresentationLikelemba>
     return FadeSlideTransition(
       delayMs: 200,
       direction: SlideDirection.up,
-      curve: LiquidGlassTheme.defaultCurve,
+      curve: Curves.easeInOutCubic,
       child: GlassButton(
         label: 'Commencer',
         icon: Icons.arrow_forward,

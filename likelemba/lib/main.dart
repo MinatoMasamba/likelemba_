@@ -14,10 +14,7 @@ void main() async {
   await isarService.init();
   print('main - IsarService initialisé avec succès.');
 
-  // 2. ⚠️ LIGNE TEMPORAIRE – Supprime toutes les données locales (à retirer après test)
-  await isarService.clearAllData();
-
-  // 3. Lancement de l'application avec ProviderScope
+  // 2. Lancement de l'application avec ProviderScope
   runApp(
     ProviderScope(
       overrides: [

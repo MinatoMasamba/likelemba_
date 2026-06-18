@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:likelemba/core/app_colors.dart';
 import 'package:logger/logger.dart';
+import '../../../../application/notifiers/auth_notifier.dart';
+import '../../../../application/notifiers/transaction_notifier.dart';
 import '../../../../application/providers/repository_providers.dart';
 
 import '../../../../core/theme/text_styles.dart';
@@ -73,9 +75,17 @@ class _PaymentValidationScreenState extends ConsumerState<PaymentValidationScree
     HapticFeedback.mediumImpact();
 
     try {
-      // TODO: Remplacer par l'appel au use case de validation
-      // await ref.read(validatePaymentUseCaseProvider).call(_memberInfo!.userId, ...);
-      await Future.delayed(const Duration(seconds: 1));
+      final authState = ref.read(authNotifierProvider).value;
+      final adminUserId = authState?.currentUser?.id.toString();
+      if (adminUserId == null) {
+        if (mounted) ErrorSnackbar.show(context, 'Session expirée. Reconnectez-vous.');
+        return;
+      }
+
+      await ref.read(transactionNotifierProvider.notifier).validateTransaction(
+            _memberInfo!.transactionId,
+            adminUserId,
+          );
 
       if (!mounted) return;
       _logger.i('$tag._handleValidate - Dépôt validé avec succès');
@@ -247,7 +257,7 @@ class _PaymentValidationScreenState extends ConsumerState<PaymentValidationScree
                   icon: _isValidating ? null : Icons.check_circle_outline,
                   isLoading: _isValidating,
                   impact: HapticImpact.heavy,
-                  onPressed: _isValidating ? null : _handleValidate,
+                  onPressed: _handleValidate,
                 ),
               ),
             ],

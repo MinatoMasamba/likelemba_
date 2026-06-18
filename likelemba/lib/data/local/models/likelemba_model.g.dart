@@ -97,8 +97,13 @@ const LikelembaModelSchema = CollectionSchema(
       name: r'regenerationTargetDays',
       type: IsarType.long,
     ),
-    r'securityFeeRate': PropertySchema(
+    r'remoteId': PropertySchema(
       id: 16,
+      name: r'remoteId',
+      type: IsarType.string,
+    ),
+    r'securityFeeRate': PropertySchema(
+      id: 17,
       name: r'securityFeeRate',
       type: IsarType.double,
     )
@@ -143,6 +148,12 @@ int _likelembaModelEstimateSize(
     }
   }
   bytesCount += 3 + object.groupName.length * 3;
+  {
+    final value = object.remoteId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -168,7 +179,8 @@ void _likelembaModelSerialize(
   writer.writeDateTime(offsets[13], object.lockedAt);
   writer.writeDouble(offsets[14], object.netJackpot);
   writer.writeLong(offsets[15], object.regenerationTargetDays);
-  writer.writeDouble(offsets[16], object.securityFeeRate);
+  writer.writeString(offsets[16], object.remoteId);
+  writer.writeDouble(offsets[17], object.securityFeeRate);
 }
 
 LikelembaModel _likelembaModelDeserialize(
@@ -191,7 +203,8 @@ LikelembaModel _likelembaModelDeserialize(
   object.isLocked = reader.readBool(offsets[12]);
   object.lockedAt = reader.readDateTimeOrNull(offsets[13]);
   object.regenerationTargetDays = reader.readLong(offsets[15]);
-  object.securityFeeRate = reader.readDouble(offsets[16]);
+  object.remoteId = reader.readStringOrNull(offsets[16]);
+  object.securityFeeRate = reader.readDouble(offsets[17]);
   return object;
 }
 
@@ -235,6 +248,8 @@ P _likelembaModelDeserializeProp<P>(
     case 15:
       return (reader.readLong(offset)) as P;
     case 16:
+      return (reader.readStringOrNull(offset)) as P;
+    case 17:
       return (reader.readDouble(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1447,6 +1462,160 @@ extension LikelembaModelQueryFilter
   }
 
   QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'remoteId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'remoteId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
+      remoteIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'remoteId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterFilterCondition>
       securityFeeRateEqualTo(
     double value, {
     double epsilon = Query.epsilon,
@@ -1816,6 +1985,19 @@ extension LikelembaModelQuerySortBy
     });
   }
 
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterSortBy> sortByRemoteId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterSortBy>
+      sortByRemoteIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.desc);
+    });
+  }
+
   QueryBuilder<LikelembaModel, LikelembaModel, QAfterSortBy>
       sortBySecurityFeeRate() {
     return QueryBuilder.apply(this, (query) {
@@ -2065,6 +2247,19 @@ extension LikelembaModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterSortBy> thenByRemoteId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LikelembaModel, LikelembaModel, QAfterSortBy>
+      thenByRemoteIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.desc);
+    });
+  }
+
   QueryBuilder<LikelembaModel, LikelembaModel, QAfterSortBy>
       thenBySecurityFeeRate() {
     return QueryBuilder.apply(this, (query) {
@@ -2192,6 +2387,13 @@ extension LikelembaModelQueryWhereDistinct
     });
   }
 
+  QueryBuilder<LikelembaModel, LikelembaModel, QDistinct> distinctByRemoteId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'remoteId', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<LikelembaModel, LikelembaModel, QDistinct>
       distinctBySecurityFeeRate() {
     return QueryBuilder.apply(this, (query) {
@@ -2311,6 +2513,12 @@ extension LikelembaModelQueryProperty
       regenerationTargetDaysProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'regenerationTargetDays');
+    });
+  }
+
+  QueryBuilder<LikelembaModel, String?, QQueryOperations> remoteIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'remoteId');
     });
   }
 

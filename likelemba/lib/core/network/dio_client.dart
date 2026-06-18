@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 /// 🌐 Client HTTP configuré pour le projet Likelemba Sécurisé.
 ///
@@ -17,13 +18,13 @@ class DioClient {
 
   late final Dio _dio;
 
- // ✅ Ajouter un callback pour récupérer le token dynamiquement
   String? Function()? _getToken;
 
   DioClient({
     required String baseUrl,
     String? authToken,
-    String? Function()? getToken, // nouveau paramètre
+    String? Function()? getToken,
+    VoidCallback? onUnauthorized,
   }) : _getToken = getToken {
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
@@ -36,8 +37,7 @@ class DioClient {
       },
     ));
 
-   // ✅ AuthInterceptor utilise maintenant le callback dynamique
-    _dio.interceptors.add(AuthInterceptor(getToken: getToken));
+    _dio.interceptors.add(AuthInterceptor(getToken: getToken, onUnauthorized: onUnauthorized));
     _dio.interceptors.add(RetryInterceptor(dio: _dio));
     if (kDebugMode) {
       _dio.interceptors.add(LoggingInterceptor());
@@ -54,27 +54,34 @@ class DioClient {
 
 class AuthInterceptor extends Interceptor {
   final String? Function()? getToken;
+  final VoidCallback? onUnauthorized;
 
-  AuthInterceptor({this.getToken});
-  
-    static const String tag = 'DioClient-AuthInterceptor';
+  AuthInterceptor({this.getToken, this.onUnauthorized});
+
+  static const String tag = 'DioClient-AuthInterceptor';
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final token = getToken?.call();
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
-      print('$tag.AuthInterceptor - Token ajouté aux headers.');
+      print('$tag - Token ajouté aux headers.');
     }
     handler.next(options);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    print('$tag.AuthInterceptor - Erreur interceptée: ${err.message}');
+    print('$tag - Erreur interceptée: ${err.message}');
     if (err.response?.statusCode == 401) {
-      print('$tag.AuthInterceptor - ⚠️ Token expiré ou invalide (401). Déconnexion nécessaire.');
-      // TODO: Émettre un événement pour rediriger vers la page de login.
+      final path = err.requestOptions.path;
+      final isAuthEndpoint = path.contains('logout') || path.contains('auth/token');
+      if (!isAuthEndpoint) {
+        print('$tag - Token expiré (401). Déconnexion automatique.');
+        onUnauthorized?.call();
+      } else {
+        print('$tag - 401 sur endpoint auth ignoré: $path');
+      }
     }
     handler.next(err);
   }

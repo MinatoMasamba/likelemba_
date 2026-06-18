@@ -16,6 +16,7 @@ class User extends Equatable {
   final int trustScore; // 0 à 100
   final double totalContribution;
   final bool isBiometricEnabled;
+  final bool notificationsEnabled;
 
   const User({
     required this.id,
@@ -26,6 +27,7 @@ class User extends Equatable {
     required this.trustScore,
     required this.totalContribution,
     required this.isBiometricEnabled,
+    this.notificationsEnabled = true,
   });
 
   /// Indique si l'utilisateur est considéré comme fiable selon les critères métier.
@@ -53,6 +55,7 @@ class User extends Equatable {
     int? trustScore,
     double? totalContribution,
     bool? isBiometricEnabled,
+    bool? notificationsEnabled,
   }) {
     return User(
       id: id ?? this.id,
@@ -63,6 +66,7 @@ class User extends Equatable {
       trustScore: trustScore ?? this.trustScore,
       totalContribution: totalContribution ?? this.totalContribution,
       isBiometricEnabled: isBiometricEnabled ?? this.isBiometricEnabled,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
     );
   }
 

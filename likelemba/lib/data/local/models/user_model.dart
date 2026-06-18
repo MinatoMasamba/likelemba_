@@ -30,6 +30,9 @@ class UserModel {
   /// (empreinte digitale ou reconnaissance faciale).
   bool isBiometricEnabled = false;
 
+  /// Indique si l'utilisateur souhaite recevoir des notifications push.
+  bool notificationsEnabled = true;
+
   /// Date de création du compte.
   late DateTime createdAt;
 

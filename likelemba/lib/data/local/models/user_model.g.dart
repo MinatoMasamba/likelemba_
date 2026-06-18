@@ -32,35 +32,40 @@ const UserModelSchema = CollectionSchema(
       name: r'name',
       type: IsarType.string,
     ),
-    r'phoneNumber': PropertySchema(
+    r'notificationsEnabled': PropertySchema(
       id: 3,
+      name: r'notificationsEnabled',
+      type: IsarType.bool,
+    ),
+    r'phoneNumber': PropertySchema(
+      id: 4,
       name: r'phoneNumber',
       type: IsarType.string,
     ),
     r'pinHash': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'pinHash',
       type: IsarType.string,
     ),
     r'role': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'role',
       type: IsarType.byte,
       enumMap: _UserModelroleEnumValueMap,
     ),
     r'status': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'status',
       type: IsarType.byte,
       enumMap: _UserModelstatusEnumValueMap,
     ),
     r'totalContribution': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'totalContribution',
       type: IsarType.double,
     ),
     r'trustScore': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'trustScore',
       type: IsarType.long,
     )
@@ -114,12 +119,13 @@ void _userModelSerialize(
   writer.writeDateTime(offsets[0], object.createdAt);
   writer.writeBool(offsets[1], object.isBiometricEnabled);
   writer.writeString(offsets[2], object.name);
-  writer.writeString(offsets[3], object.phoneNumber);
-  writer.writeString(offsets[4], object.pinHash);
-  writer.writeByte(offsets[5], object.role.index);
-  writer.writeByte(offsets[6], object.status.index);
-  writer.writeDouble(offsets[7], object.totalContribution);
-  writer.writeLong(offsets[8], object.trustScore);
+  writer.writeBool(offsets[3], object.notificationsEnabled);
+  writer.writeString(offsets[4], object.phoneNumber);
+  writer.writeString(offsets[5], object.pinHash);
+  writer.writeByte(offsets[6], object.role.index);
+  writer.writeByte(offsets[7], object.status.index);
+  writer.writeDouble(offsets[8], object.totalContribution);
+  writer.writeLong(offsets[9], object.trustScore);
 }
 
 UserModel _userModelDeserialize(
@@ -133,15 +139,16 @@ UserModel _userModelDeserialize(
   object.id = id;
   object.isBiometricEnabled = reader.readBool(offsets[1]);
   object.name = reader.readString(offsets[2]);
-  object.phoneNumber = reader.readString(offsets[3]);
-  object.pinHash = reader.readString(offsets[4]);
-  object.role = _UserModelroleValueEnumMap[reader.readByteOrNull(offsets[5])] ??
+  object.notificationsEnabled = reader.readBool(offsets[3]);
+  object.phoneNumber = reader.readString(offsets[4]);
+  object.pinHash = reader.readString(offsets[5]);
+  object.role = _UserModelroleValueEnumMap[reader.readByteOrNull(offsets[6])] ??
       UserRole.member;
   object.status =
-      _UserModelstatusValueEnumMap[reader.readByteOrNull(offsets[6])] ??
+      _UserModelstatusValueEnumMap[reader.readByteOrNull(offsets[7])] ??
           UserStatus.active;
-  object.totalContribution = reader.readDouble(offsets[7]);
-  object.trustScore = reader.readLong(offsets[8]);
+  object.totalContribution = reader.readDouble(offsets[8]);
+  object.trustScore = reader.readLong(offsets[9]);
   return object;
 }
 
@@ -159,18 +166,20 @@ P _userModelDeserializeProp<P>(
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readString(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
       return (reader.readString(offset)) as P;
     case 5:
+      return (reader.readString(offset)) as P;
+    case 6:
       return (_UserModelroleValueEnumMap[reader.readByteOrNull(offset)] ??
           UserRole.member) as P;
-    case 6:
+    case 7:
       return (_UserModelstatusValueEnumMap[reader.readByteOrNull(offset)] ??
           UserStatus.active) as P;
-    case 7:
-      return (reader.readDouble(offset)) as P;
     case 8:
+      return (reader.readDouble(offset)) as P;
+    case 9:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -630,6 +639,16 @@ extension UserModelQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'name',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<UserModel, UserModel, QAfterFilterCondition>
+      notificationsEnabledEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'notificationsEnabled',
+        value: value,
       ));
     });
   }
@@ -1170,6 +1189,20 @@ extension UserModelQuerySortBy on QueryBuilder<UserModel, UserModel, QSortBy> {
     });
   }
 
+  QueryBuilder<UserModel, UserModel, QAfterSortBy>
+      sortByNotificationsEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notificationsEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserModel, UserModel, QAfterSortBy>
+      sortByNotificationsEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notificationsEnabled', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserModel, UserModel, QAfterSortBy> sortByPhoneNumber() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'phoneNumber', Sort.asc);
@@ -1295,6 +1328,20 @@ extension UserModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<UserModel, UserModel, QAfterSortBy>
+      thenByNotificationsEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notificationsEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserModel, UserModel, QAfterSortBy>
+      thenByNotificationsEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notificationsEnabled', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserModel, UserModel, QAfterSortBy> thenByPhoneNumber() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'phoneNumber', Sort.asc);
@@ -1390,6 +1437,13 @@ extension UserModelQueryWhereDistinct
     });
   }
 
+  QueryBuilder<UserModel, UserModel, QDistinct>
+      distinctByNotificationsEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'notificationsEnabled');
+    });
+  }
+
   QueryBuilder<UserModel, UserModel, QDistinct> distinctByPhoneNumber(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1452,6 +1506,13 @@ extension UserModelQueryProperty
   QueryBuilder<UserModel, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
+    });
+  }
+
+  QueryBuilder<UserModel, bool, QQueryOperations>
+      notificationsEnabledProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'notificationsEnabled');
     });
   }
 

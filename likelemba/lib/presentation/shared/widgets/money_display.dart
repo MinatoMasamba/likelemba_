@@ -35,10 +35,15 @@ class MoneyDisplay extends StatelessWidget {
       duration: animationDuration,
       curve: animationCurve,
       builder: (context, value, child) {
-        return Text(
-          MoneyFormatter.format(value, currency),
-          style: baseStyle.copyWith(
-            fontFeatures: const [FontFeature.tabularFigures()],
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            MoneyFormatter.format(value, currency),
+            maxLines: 1,
+            style: baseStyle.copyWith(
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         );
       },

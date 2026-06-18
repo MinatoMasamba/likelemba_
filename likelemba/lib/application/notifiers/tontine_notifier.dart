@@ -5,6 +5,7 @@ import 'package:likelemba/application/notifiers/auth_notifier.dart';
 import 'package:likelemba/application/providers/repository_providers.dart';
 import 'package:logger/logger.dart';
 import '../../domain/entities/likelemba_group.dart';
+import '../../domain/entities/user.dart';
 import '../../domain/usecases/tontine/calculate_cycle_projection_use_case.dart';
 import '../../domain/usecases/tontine/process_member_exit_use_case.dart';
 import '../../domain/usecases/tontine/get_queue_position_use_case.dart';
@@ -75,12 +76,45 @@ class TontineNotifier extends AsyncNotifier<TontineState> {
   @override
   Future<TontineState> build() async {
     const method = 'TontineNotifier.build';
-    _logger.i('$method - Chargement des groupes actifs.');
+    _logger.i('$method - Initialisation.');
 
-    // À remplacer par la récupération réelle via le repository
-    // final result = await ref.read(tontineRepositoryProvider).getActiveGroupsForMember(currentUserId);
+    final authState = await ref.watch(authNotifierProvider.future);
+    final user = authState.currentUser;
+    if (user == null) {
+      _logger.w('$method - Aucun utilisateur connecté.');
+      return const TontineState();
+    }
 
-    return const TontineState();
+    if (user.role == UserRole.admin) {
+      _logger.i('$method - Admin (id=${user.id}), chargement depuis le serveur...');
+      final remoteResult = await ref.read(tontineRepositoryProvider).getGroupsManagedBy(user.id);
+      if (remoteResult.isRight()) {
+        final groups = remoteResult.fold((l) => <LikelembaGroup>[], (r) => r);
+        _logger.i('$method - ${groups.length} groupes reçus du serveur.');
+        return TontineState(managedGroups: groups);
+      }
+      _logger.w('$method - Serveur indisponible, lecture Isar...');
+      final localResult = await ref.read(tontineRepositoryProvider).getLocalGroupsManagedBy(user.id);
+      final groups = localResult.fold((l) => <LikelembaGroup>[], (r) => r);
+      _logger.i('$method - ${groups.length} groupes locaux.');
+      return TontineState(managedGroups: groups);
+    } else {
+      _logger.i('$method - Membre (id=${user.id}), lecture des groupes actifs...');
+      final result = await ref.read(tontineRepositoryProvider).watchUserGroups(user.id).first;
+      return result.fold(
+        (failure) {
+          _logger.e('$method - Erreur stream: ${failure.message}');
+          return const TontineState();
+        },
+        (groups) {
+          _logger.i('$method - ${groups.length} groupe(s) actif(s).');
+          return TontineState(
+            activeGroups: groups,
+            selectedGroup: groups.isNotEmpty ? groups.first : null,
+          );
+        },
+      );
+    }
   }
 
   /// Sélectionne un groupe et calcule sa projection EDO.
@@ -186,7 +220,7 @@ Future<void> selectGroup(String groupId) async {
     state = const AsyncValue.loading();
 
     final useCase = ref.read(processMemberExitUseCaseProvider);
-    final result = await useCase.call(group.id as String, userId);
+    final result = await useCase.call(group.id.toString(), userId);
 
     result.fold(
       (failure) {
@@ -194,10 +228,37 @@ Future<void> selectGroup(String groupId) async {
       },
       (refundAmount) async {
         _logger.i('TontineNotifier.processMemberExit - Remboursement: $refundAmount');
-        // Recharger le groupe après la sortie
-        await selectGroup(group.id as String);
+        await selectGroup(group.id.toString());
       },
     );
+  }
+
+  /// Charge les groupes actifs d'un membre et sélectionne le premier.
+  Future<void> loadMemberGroups(int userId) async {
+    const method = 'loadMemberGroups';
+    _logger.i('$method - Chargement des groupes pour membre $userId');
+    try {
+      final result = await ref
+          .read(tontineRepositoryProvider)
+          .watchUserGroups(userId)
+          .first;
+
+      result.fold(
+        (failure) => _logger.e('$method - Erreur: ${failure.message}'),
+        (groups) {
+          _logger.i('$method - ${groups.length} groupe(s) trouvé(s)');
+          state = AsyncValue.data(
+            state.value?.copyWith(activeGroups: groups) ??
+                TontineState(activeGroups: groups),
+          );
+          if (groups.isNotEmpty) {
+            selectGroup(groups.first.id.toString());
+          }
+        },
+      );
+    } catch (e, stack) {
+      _logger.e('$method - Exception: $e', error: e, stackTrace: stack);
+    }
   }
 
   bool _evaluateRisk(LikelembaGroup group, List<dynamic> projection) {
@@ -206,7 +267,26 @@ Future<void> selectGroup(String groupId) async {
     return group.currentReserveFund < threshold;
   }
 
-  Future<void> lockGroup(int id) async {}
+  Future<void> lockGroup(int id) async {
+    _logger.i('TontineNotifier.lockGroup - Verrouillage/déverrouillage groupe $id');
+    final authState = ref.read(authNotifierProvider).value;
+    final adminUserId = authState?.currentUser?.id ?? 0;
+
+    final result = await ref
+        .read(tontineRepositoryProvider)
+        .lockGroupSettings(id, adminUserId);
+
+    result.fold(
+      (failure) {
+        _logger.e('lockGroup - Erreur: ${failure.message}');
+        state = AsyncValue.error(failure.message, StackTrace.current);
+      },
+      (_) async {
+        _logger.i('lockGroup - Succès, rechargement du groupe $id');
+        await selectGroup(id.toString());
+      },
+    );
+  }
 
   // lib/application/notifiers/tontine_notifier.dart
 
@@ -246,3 +326,76 @@ Future<void> loadManagedGroups() async {
 }
 
 final tontineNotifierProvider = AsyncNotifierProvider<TontineNotifier, TontineState>(TontineNotifier.new);
+
+/// Charge les membres du groupe actuellement sélectionné depuis la base locale.
+final groupMembersProvider = FutureProvider<List<User>>((ref) async {
+  final group = ref.watch(tontineNotifierProvider).value?.selectedGroup;
+  if (group == null || group.memberIds.isEmpty) return [];
+
+  final userDao = ref.read(userDaoProvider);
+  final users = <User>[];
+
+  for (final memberId in group.memberIds) {
+    final model = await userDao.getById(memberId);
+    if (model != null) {
+      users.add(User(
+        id: model.id,
+        name: model.name,
+        phoneNumber: model.phoneNumber,
+        role: UserRole.values[model.role.index],
+        status: UserStatus.values[model.status.index],
+        trustScore: model.trustScore,
+        totalContribution: model.totalContribution,
+        isBiometricEnabled: model.isBiometricEnabled,
+      ));
+    }
+  }
+
+  return users;
+});
+
+/// Membre avec sa vraie progression de cotisation (ratio versé / attendu).
+class MemberWithProgress {
+  final User member;
+  final double contributionProgress;
+
+  const MemberWithProgress({required this.member, required this.contributionProgress});
+}
+
+/// Charge les membres du groupe sélectionné avec leur vraie progression calculée
+/// depuis les transactions validées dans Isar.
+final groupMembersWithProgressProvider = FutureProvider<List<MemberWithProgress>>((ref) async {
+  final group = ref.watch(tontineNotifierProvider).value?.selectedGroup;
+  if (group == null || group.memberIds.isEmpty) return [];
+
+  final userDao = ref.read(userDaoProvider);
+  final transactionRepo = ref.read(transactionRepositoryProvider);
+
+  // Cotisation attendue = montant journalier × jours écoulés (min 1 jour pour éviter ÷0)
+  final elapsedDays = group.elapsedDays > 0 ? group.elapsedDays : 1;
+  final expectedTotal = group.dailyContribution * elapsedDays;
+
+  final List<MemberWithProgress> results = [];
+  for (final memberId in group.memberIds) {
+    final model = await userDao.getById(memberId);
+    if (model == null) continue;
+
+    final user = User(
+      id: model.id,
+      name: model.name,
+      phoneNumber: model.phoneNumber,
+      role: UserRole.values[model.role.index],
+      status: UserStatus.values[model.status.index],
+      trustScore: model.trustScore,
+      totalContribution: model.totalContribution,
+      isBiometricEnabled: model.isBiometricEnabled,
+    );
+
+    final contribResult = await transactionRepo.getUserTotalContribution(group.id, memberId);
+    final totalPaid = contribResult.fold((l) => 0.0, (r) => r);
+    final progress = (totalPaid / expectedTotal).clamp(0.0, 1.0);
+
+    results.add(MemberWithProgress(member: user, contributionProgress: progress));
+  }
+  return results;
+});

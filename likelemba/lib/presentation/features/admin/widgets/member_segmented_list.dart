@@ -1,6 +1,7 @@
 // lib/presentation/features/tontine/screens/admin/widgets/member_segmented_list.dart
 
 import 'package:flutter/material.dart';
+import 'package:likelemba/presentation/features/tontine/screens/member_profile_screen.dart';
 import 'package:likelemba/presentation/shared/widgets/liquid_glass_card.dart';
 import 'package:logger/logger.dart';
 
@@ -99,7 +100,12 @@ class MemberSegmentedList extends StatelessWidget {
                 ),
                 onTap: () {
                   _logger.i('$tag - Membre sélectionné: ${member.name} (ID: ${member.id})');
-                  // TODO: Naviguer vers le profil détaillé
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MemberProfileScreen.fromSegmentData(member),
+                    ),
+                  );
                 },
               );
             },

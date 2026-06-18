@@ -43,7 +43,6 @@ class _TransactionHistoryScreenState extends ConsumerState<TransactionHistoryScr
     setState(() => _isLoading = true);
     _logger.i('$tag.$method - Récupération des transactions.');
     try {
-      // TODO: Appeler le repository via un provider
       await ref.read(transactionNotifierProvider.notifier).loadTransactions(widget.groupId);
     } catch (e, stack) {
       _logger.e('$tag.$method - Erreur: $e', error: e, stackTrace: stack);

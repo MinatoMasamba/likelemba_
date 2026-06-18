@@ -3,6 +3,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:likelemba/application/providers/repository_providers.dart';
 import 'package:logger/logger.dart';
+import '../../data/remote/tontine_remote_data_source.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/usecases/transaction/submit_contribution_use_case.dart';
 import '../../domain/usecases/transaction/validate_payment_use_case.dart';
@@ -98,7 +99,7 @@ class TransactionNotifier extends AsyncNotifier<TransactionState> {
 
   /// Demande un retrait anticipé (calcul de la pénalité dégressive).
   Future<double?> requestExit(String groupId, String userId) async {
-    final result = await ref.read(transactionRepositoryProvider).calculateExitRefund(groupId as int, userId as int);
+    final result = await ref.read(transactionRepositoryProvider).calculateExitRefund(int.parse(groupId), int.parse(userId));
     return result.fold(
       (failure) {
         _logger.e('TransactionNotifier.requestExit - Échec: ${failure.message}');
@@ -108,7 +109,45 @@ class TransactionNotifier extends AsyncNotifier<TransactionState> {
     );
   }
 
-  Future<void> loadTransactions(String groupId) async {}
+  /// Envoie une demande de réception de la cagnotte à l'admin via l'API distante.
+  Future<void> requestPayout({
+    required String groupId,
+    required String userId,
+  }) async {
+    const method = 'requestPayout';
+    _logger.i('TransactionNotifier.$method - Groupe $groupId, Membre $userId');
+    final dataSource = ref.read(tontineRemoteDataSourceProvider);
+    await dataSource.requestPayout(groupId: groupId, userId: userId);
+    _logger.i('TransactionNotifier.$method - Demande envoyée avec succès.');
+  }
+
+  Future<void> loadTransactions(String groupId) async {
+    const method = 'loadTransactions';
+    _logger.i('$method - Chargement des transactions pour groupe $groupId');
+
+    final current = state.value ?? const TransactionState();
+    state = AsyncValue.data(current.copyWith(isLoading: true));
+
+    final result = await ref
+        .read(transactionRepositoryProvider)
+        .getTransactionsByGroup(int.parse(groupId));
+
+    result.fold(
+      (failure) {
+        _logger.e('$method - Échec: ${failure.message}');
+        state = AsyncValue.error(failure.message, StackTrace.current);
+      },
+      (transactions) {
+        _logger.i('$method - ${transactions.length} transactions chargées.');
+        state = AsyncValue.data(
+          (state.value ?? const TransactionState()).copyWith(
+            isLoading: false,
+            recentTransactions: transactions,
+          ),
+        );
+      },
+    );
+  }
 }
 
 final transactionNotifierProvider = AsyncNotifierProvider<TransactionNotifier, TransactionState>(TransactionNotifier.new);

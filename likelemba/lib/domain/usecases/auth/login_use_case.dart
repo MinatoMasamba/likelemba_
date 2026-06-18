@@ -27,14 +27,17 @@ class LoginUseCase {
     const method = 'LoginUseCase.call';
     _logger.i('$method - Tentative de connexion pour $phoneNumber');
 
-    // Validation basique du numéro
-    if (!_isValidPhoneNumber(phoneNumber)) {
+    final normalized = _normalize(phoneNumber);
+
+    if (!_isValidPhoneNumber(normalized)) {
       _logger.w('$method - Numéro invalide: $phoneNumber');
       return Left(ValidationFailure('Format de numéro de téléphone invalide.'));
     }
 
+    _logger.i('$method - Numéro normalisé: $normalized');
+
     // Appel au repository d'authentification
-    final result = await _authRepository.verifyOtp(phoneNumber, pin);
+    final result = await _authRepository.verifyOtp(normalized, pin);
     return result.fold(
       (failure) {
         _logger.e('$method - Échec connexion: $failure');
@@ -49,8 +52,24 @@ class LoginUseCase {
     );
   }
 
+  /// Convertit un numéro local congolais (0XXXXXXXXX) en format international (+243XXXXXXXXX).
+  /// Les numéros déjà au format +... sont retournés inchangés.
+  String _normalize(String phone) {
+    final digits = phone.trim();
+    if (digits.startsWith('+')) return digits;
+    // Numéro local : 0XXXXXXXXX → +243XXXXXXXXX
+    if (digits.startsWith('0') && digits.length == 10) {
+      return '+243${digits.substring(1)}';
+    }
+    // Numéro sans indicatif ni zéro : 9XXXXXXXXX (9 chiffres)
+    if (!digits.startsWith('0') && digits.length == 9) {
+      return '+243$digits';
+    }
+    return digits;
+  }
+
   bool _isValidPhoneNumber(String phone) {
-    final regex = RegExp(r'^\+[1-9]\d{1,14}$');
+    final regex = RegExp(r'^\+[1-9]\d{7,14}$');
     return regex.hasMatch(phone);
   }
 }

@@ -34,4 +34,13 @@ abstract class IAuthRepository {
   /// Active ou désactive l'authentification biométrique pour l'utilisateur courant.
   /// [enabled] : `true` pour activer, `false` pour désactiver.
   Future<Either<Failure, void>> toggleBiometrics(bool enabled);
+
+  /// Active ou désactive les notifications push pour l'utilisateur courant.
+  /// [enabled] : `true` pour activer, `false` pour désactiver.
+  Future<Either<Failure, void>> toggleNotifications(bool enabled);
+
+  /// Change le code PIN de l'utilisateur courant.
+  /// [oldPin] : PIN actuel (vérifié côté serveur).
+  /// [newPin] : nouveau PIN à enregistrer.
+  Future<Either<Failure, void>> changePin(String oldPin, String newPin);
 }

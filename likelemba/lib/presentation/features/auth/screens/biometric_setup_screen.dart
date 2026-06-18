@@ -67,9 +67,8 @@ class _BiometricSetupScreenState extends ConsumerState<BiometricSetupScreen>
   void _navigateToDashboard() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const CheckRoleScreen()), // VerifieRoLE verifiera le rôle et redirigera vers le dashboard approprié
-      );
-    // TODO: Navigation vers le Dashboard principal
+      MaterialPageRoute(builder: (context) => const CheckRoleScreen()),
+    );
     _logger.i('$tag._navigateToDashboard - Redirection dashboard.');
   }
 

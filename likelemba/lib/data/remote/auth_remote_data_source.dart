@@ -52,6 +52,7 @@ class AuthRemoteDataSource {
   Future<AuthResponse> verifyOtp(String phoneNumber, String code) async {
     const method = 'verifyOtp';
     print('$tag.$method - Vérification OTP pour $phoneNumber');
+    print('$tag.$method - >>>>>> ENVOI: phone="$phoneNumber" password="$code" (length=${code.length})');
 
     try {
       final response = await _apiClient.dio.post(
@@ -142,7 +143,7 @@ class AuthRemoteDataSource {
     print('$tag.$method - Déconnexion');
 
     try {
-      await _apiClient.dio.post('/auth/logout');
+      await _apiClient.dio.post('v1/users/auth/logout/');
       print('$tag.$method - Déconnexion réussie');
     } on DioException catch (e) {
       print('$tag.$method - DioException ignorée: ${e.message}');
@@ -197,6 +198,51 @@ class AuthRemoteDataSource {
     } catch (e) {
       print('$tag.$method - Erreur inattendue: $e');
       throw ServerException('Erreur lors de la création du compte');
+    }
+  }
+
+  /// Change le code PIN de l'utilisateur connecté.
+  ///
+  /// ⚠️ Endpoint supposé (`v1/users/auth/change-password/`), à aligner avec le
+  /// contrat réel exposé par le backend dès qu'il sera disponible.
+  Future<void> changePin(String oldPin, String newPin) async {
+    const method = 'changePin';
+    print('$tag.$method - Changement de PIN demandé');
+
+    try {
+      final response = await _apiClient.dio.post(
+        'v1/users/auth/change-password/',
+        data: {
+          'old_password': oldPin,
+          'new_password': newPin,
+          'new_password2': newPin,
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        print('$tag.$method - PIN changé avec succès');
+        return;
+      } else if (response.statusCode == 400) {
+        final errors = response.data as Map<String, dynamic>;
+        throw ValidationException(_formatValidationErrors(errors));
+      } else if (response.statusCode == 401) {
+        throw AuthenticationException('Code PIN actuel incorrect.');
+      } else {
+        throw ServerException('Échec du changement de PIN', statusCode: response.statusCode);
+      }
+    } on DioException catch (e) {
+      print('$tag.$method - DioException: ${e.message}');
+      if (e.response?.statusCode == 400) {
+        final errors = e.response?.data as Map<String, dynamic>? ?? {};
+        throw ValidationException(_formatValidationErrors(errors));
+      }
+      if (e.response?.statusCode == 401) {
+        throw AuthenticationException('Code PIN actuel incorrect.');
+      }
+      throw _mapDioException(e, method);
+    } catch (e) {
+      print('$tag.$method - Erreur inattendue: $e');
+      throw ServerException('Erreur lors du changement de PIN');
     }
   }
 

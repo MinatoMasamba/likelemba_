@@ -304,6 +304,20 @@ Future<Either<Failure, List<entity.LikelembaGroup>>> getGroupsManagedBy(int admi
   }
 }
 
+  @override
+  Future<Either<Failure, List<entity.LikelembaGroup>>> getLocalGroupsManagedBy(int adminUserId) async {
+    const method = 'getLocalGroupsManagedBy';
+    _logger.d('$method - Lecture locale pour admin $adminUserId');
+    try {
+      final models = await _likelembaDao.getGroupsManagedBy(adminUserId);
+      final entities = await Future.wait(models.map((m) => m.toEntity()));
+      return Right(entities);
+    } catch (e, stack) {
+      _logger.e('$method - Erreur: $e', error: e, stackTrace: stack);
+      return Left(CacheFailure(customMessage: 'Erreur de lecture locale des groupes'));
+    }
+  }
+
   // -------------------------------------------------------------------------
   // Conversion Entité ↔ Modèle
   // -------------------------------------------------------------------------

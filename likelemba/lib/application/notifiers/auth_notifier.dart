@@ -1,5 +1,6 @@
 // lib/application/notifiers/auth_notifier.dart
 
+import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:likelemba/application/providers/repository_providers.dart';
 import 'package:likelemba/core/error/failures.dart';
@@ -16,12 +17,14 @@ class AuthState {
   final bool isLoading;
   final String? errorMessage;
   final bool isBiometricEnabled;
+  final bool notificationsEnabled;
 
   const AuthState({
     this.currentUser,
     this.isLoading = false,
     this.errorMessage,
     this.isBiometricEnabled = false,
+    this.notificationsEnabled = true,
   });
 
   bool get isAuthenticated => currentUser != null;
@@ -31,12 +34,14 @@ class AuthState {
     bool? isLoading,
     String? errorMessage,
     bool? isBiometricEnabled,
+    bool? notificationsEnabled,
   }) {
     return AuthState(
       currentUser: currentUser ?? this.currentUser,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
       isBiometricEnabled: isBiometricEnabled ?? this.isBiometricEnabled,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
     );
   }
 
@@ -62,7 +67,11 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       },
       (user) {
         _logger.i('$method - Utilisateur connecté: ${user?.name ?? "Aucun"}');
-        return AuthState(currentUser: user, isBiometricEnabled: user?.isBiometricEnabled ?? false);
+        return AuthState(
+          currentUser: user,
+          isBiometricEnabled: user?.isBiometricEnabled ?? false,
+          notificationsEnabled: user?.notificationsEnabled ?? true,
+        );
       },
     );
   }
@@ -110,6 +119,33 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         state = AsyncValue.data(current.copyWith(isBiometricEnabled: enabled));
       },
     );
+  }
+
+  /// Active ou désactive les notifications push.
+  Future<void> toggleNotifications(bool enabled) async {
+    final useCase = ref.read(toggleNotificationsUseCaseProvider);
+    final result = await useCase.call(enabled);
+
+    result.fold(
+      (failure) {
+        state = AsyncValue.error(failure.message, StackTrace.current);
+      },
+      (_) {
+        final current = state.value ?? const AuthState();
+        state = AsyncValue.data(current.copyWith(notificationsEnabled: enabled));
+      },
+    );
+  }
+
+  /// Change le PIN de l'utilisateur courant. Ne modifie pas l'état d'auth global :
+  /// l'appelant gère l'affichage du résultat (succès/erreur) localement.
+  Future<Either<Failure, void>> changePin({
+    required String oldPin,
+    required String newPin,
+    required String confirmPin,
+  }) {
+    final useCase = ref.read(changePinUseCaseProvider);
+    return useCase.call(oldPin: oldPin, newPin: newPin, confirmPin: confirmPin);
   }
 
   /// Déconnecte l'utilisateur.

@@ -40,6 +40,9 @@ abstract class ITontineRepository {
   /// Passe au bénéficiaire suivant dans le cycle.
   Future<Either<Failure, void>> advanceBeneficiary(int groupId, int adminUserId);
 
-  /// Récupère tous les groupes administrés par un utilisateur donné.
+  /// Récupère tous les groupes administrés par un utilisateur donné (serveur + cache local).
   Future<Either<Failure, List<LikelembaGroup>>> getGroupsManagedBy(int adminUserId);
+
+  /// Lecture hors-ligne des groupes administrés depuis la base Isar locale.
+  Future<Either<Failure, List<LikelembaGroup>>> getLocalGroupsManagedBy(int adminUserId);
 }

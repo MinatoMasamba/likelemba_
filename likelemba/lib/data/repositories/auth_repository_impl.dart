@@ -172,6 +172,87 @@ Future<Either<Failure, void>> toggleBiometrics(bool enabled) async {
   }
 }
 
+  /// Active ou désactive les notifications push pour l'utilisateur courant.
+@override
+Future<Either<Failure, void>> toggleNotifications(bool enabled) async {
+  const method = 'toggleNotifications';
+  _logger.i('$method - Activation notifications: $enabled');
+  try {
+    final currentUserResult = await getCurrentUser();
+
+    return currentUserResult.fold(
+      (failure) {
+        _logger.e('$method - Échec récupération utilisateur: ${failure.message}');
+        return Left(failure);
+      },
+      (currentUserEntity) async {
+        if (currentUserEntity == null) {
+          _logger.w('$method - Aucun utilisateur connecté.');
+          return Left(CacheFailure(customMessage: 'Aucun utilisateur connecté'));
+        }
+
+        final userModel = await _userDao.getById(currentUserEntity.id);
+        if (userModel == null) {
+          _logger.e('$method - Utilisateur ID ${currentUserEntity.id} introuvable en base.');
+          return Left(CacheFailure(customMessage: 'Utilisateur introuvable en base'));
+        }
+
+        userModel.notificationsEnabled = enabled;
+        await _userDao.update(userModel);
+        _logger.i('$method - Notifications mises à jour avec succès.');
+        return const Right(null);
+      },
+    );
+  } on AppException catch (e) {
+    _logger.e('$method - Exception applicative: $e');
+    return Left(mapExceptionToFailure(e));
+  } catch (e, stack) {
+    _logger.e('$method - Erreur inconnue: $e', error: e, stackTrace: stack);
+    return Left(CacheFailure(customMessage: 'Erreur lors de la modification des notifications'));
+  }
+}
+
+  /// Change le PIN de l'utilisateur courant (vérification serveur + mise à jour locale).
+@override
+Future<Either<Failure, void>> changePin(String oldPin, String newPin) async {
+  const method = 'changePin';
+  _logger.i('$method - Changement de PIN demandé');
+  try {
+    await _remoteDataSource.changePin(oldPin, newPin);
+
+    final currentUserResult = await getCurrentUser();
+    return currentUserResult.fold(
+      (failure) {
+        _logger.e('$method - Échec récupération utilisateur: ${failure.message}');
+        return Left(failure);
+      },
+      (currentUserEntity) async {
+        if (currentUserEntity == null) {
+          _logger.w('$method - Aucun utilisateur connecté.');
+          return Left(CacheFailure(customMessage: 'Aucun utilisateur connecté'));
+        }
+
+        final userModel = await _userDao.getById(currentUserEntity.id);
+        if (userModel == null) {
+          _logger.e('$method - Utilisateur ID ${currentUserEntity.id} introuvable en base.');
+          return Left(CacheFailure(customMessage: 'Utilisateur introuvable en base'));
+        }
+
+        userModel.pinHash = _hashPin(newPin);
+        await _userDao.update(userModel);
+        _logger.i('$method - PIN changé avec succès.');
+        return const Right(null);
+      },
+    );
+  } on AppException catch (e) {
+    _logger.e('$method - Exception applicative: $e');
+    return Left(mapExceptionToFailure(e));
+  } catch (e, stack) {
+    _logger.e('$method - Erreur inconnue: $e', error: e, stackTrace: stack);
+    return Left(CacheFailure(customMessage: 'Erreur lors du changement de PIN'));
+  }
+}
+
   /// Déconnecte l'utilisateur : révoque le token distant et efface les données locales.
   @override
   Future<Either<Failure, void>> logout() async {
@@ -303,5 +384,6 @@ extension UserModelToEntity on UserModel {
     trustScore: trustScore,
     totalContribution: totalContribution,
     isBiometricEnabled: isBiometricEnabled,
+    notificationsEnabled: notificationsEnabled,
   );
 }

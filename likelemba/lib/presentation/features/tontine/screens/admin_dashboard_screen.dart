@@ -8,19 +8,25 @@ import 'package:likelemba/application/notifiers/auth_notifier.dart';
 import 'package:likelemba/application/providers/repository_providers.dart';
 import 'package:likelemba/core/app_colors.dart';
 import 'package:likelemba/presentation/features/tontine/screens/create_tontine_screen.dart';
+import 'package:likelemba/presentation/features/tontine/screens/join_requests_screen.dart';
+import 'package:likelemba/presentation/features/settings/settings_screen.dart';
 import 'package:likelemba/presentation/features/tontine/screens/payment_validation_screen.dart';
 import 'package:logger/logger.dart';
 
-import '../../../../application/notifiers/tontine_notifier.dart';
+import '../../../../application/notifiers/tontine_notifier.dart' hide RiskLevel;
 import '../../../../application/notifiers/sync_notifier.dart';
 
 import '../../../../core/theme/liquid_glass_theme.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../../../domain/entities/likelemba_group.dart';
 import '../../../shared/animations/fade_slide_transition.dart';
+import '../../../../core/theme/text_styles.dart';
+import '../../../../data/remote/tontine_remote_data_source.dart';
 import '../../../shared/widgets/glass_button.dart';
 import '../../../shared/widgets/liquid_glass_card.dart';
 import '../../../shared/widgets/error_snackbar.dart';
+import '../../../features/admin/widgets/anomaly_detection_card.dart';
+import '../../../features/admin/widgets/member_segmented_list.dart';
 import '../widgets/horizontal_member_queue.dart';
 import '../widgets/reserve_fund_chart.dart';
 
@@ -38,6 +44,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   LikelembaGroup? _selectedGroup;
   bool _isLoading = false;
+  List<MemberSegmentData> _segmentedMembers = [];
 
   @override
   void initState() {
@@ -62,12 +69,66 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     HapticFeedback.mediumImpact();
     setState(() => _selectedGroup = group);
     try {
-      // ID est un int, le notifier attend probablement un int aussi
       await ref.read(tontineNotifierProvider.notifier).selectGroup(group.id.toString());
+      await _loadSegmentedMembers(group);
     } catch (e, stack) {
       _logger.e('$tag.$method - Erreur chargement groupe: $e', error: e, stackTrace: stack);
       ErrorSnackbar.show(context, 'Impossible de charger les données du groupe.');
       setState(() => _selectedGroup = null);
+    }
+  }
+
+  Future<void> _loadSegmentedMembers(LikelembaGroup group) async {
+    final groupUuid = group.remoteId;
+    if (groupUuid == null) return;
+    try {
+      final dataSource = ref.read(tontineRemoteDataSourceProvider);
+      final memberships = await dataSource.getMembershipsForValidation(groupUuid);
+      if (!mounted) return;
+      setState(() {
+        _segmentedMembers = memberships.map((m) {
+          // Dériver le niveau de risque depuis la dette et les pénalités
+          final RiskLevel risk;
+          if (m.debtAmount > 0 && m.penaltyAmount > 0) {
+            risk = RiskLevel.high;
+          } else if (m.debtAmount > 0 || m.penaltyAmount > 0) {
+            risk = RiskLevel.medium;
+          } else {
+            risk = RiskLevel.low;
+          }
+          // Score de confiance approché (100 si à jour, réduit selon la dette)
+          final trust = m.amountToValidate > 0
+              ? (100 - (m.debtAmount / m.amountToValidate * 50).clamp(0, 60)).round()
+              : 75;
+          return MemberSegmentData(
+            id: m.localUserId,
+            name: m.userName,
+            trustScore: trust,
+            riskLevel: risk,
+          );
+        }).toList();
+      });
+    } catch (e, stack) {
+      _logger.w('$tag._loadSegmentedMembers - API indisponible, lecture Isar: $e', stackTrace: stack);
+      final membersAsync = ref.read(groupMembersProvider);
+      membersAsync.whenData((users) {
+        if (!mounted) return;
+        setState(() {
+          _segmentedMembers = users.map((u) {
+            final risk = u.trustScore >= 70
+                ? RiskLevel.low
+                : u.trustScore >= 40
+                    ? RiskLevel.medium
+                    : RiskLevel.high;
+            return MemberSegmentData(
+              id: u.id,
+              name: u.name,
+              trustScore: u.trustScore,
+              riskLevel: risk,
+            );
+          }).toList();
+        });
+      });
     }
   }
 
@@ -144,7 +205,7 @@ Future<void> _handleValidatePayments() async {
             MaterialPageRoute(
               builder: (_) => PaymentValidationScreen(
                 groupId: _selectedGroup!.id,
-                memberInfo: member,  // on passera l'objet complet
+                userId: member.localUserId,
               ),
             ),
           );
@@ -157,6 +218,25 @@ Future<void> _handleValidatePayments() async {
 }
 
 
+
+  /// Navigation vers l'écran de gestion des demandes d'adhésion
+  Future<void> _handleJoinRequests() async {
+    if (_selectedGroup == null) return;
+    final groupUuid = _selectedGroup!.remoteId;
+    if (groupUuid == null) {
+      ErrorSnackbar.show(context, 'Groupe non synchronisé — UUID manquant.');
+      return;
+    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => JoinRequestsScreen(
+          groupUuid: groupUuid,
+          groupName: _selectedGroup!.groupName,
+        ),
+      ),
+    );
+  }
 
   /// Action de création d'une nouvelle tontine (bouton + FAB)
   Future<void> _handleCreateTontine() async {
@@ -175,7 +255,7 @@ Future<void> _handleValidatePayments() async {
   @override
   Widget build(BuildContext context) {
     final tontineState = ref.watch(tontineNotifierProvider);
-    final managedGroups = (tontineState.value?.managedGroups as List<LikelembaGroup>?) ?? [];
+    final managedGroups = tontineState.value?.managedGroups ?? [];
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -204,8 +284,12 @@ Future<void> _handleValidatePayments() async {
             ),
           ],
           IconButton(
-            onPressed: () => _logger.i('$tag - Paramètres'),
-            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
+            icon: const Icon(Icons.settings, color: Colors.white),
+            tooltip: 'Paramètres',
           ),
         ],
       ),
@@ -342,7 +426,7 @@ Future<void> _handleValidatePayments() async {
             LiquidGlassCard(
               padding: const EdgeInsets.all(20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
                     group.groupName,
@@ -377,6 +461,9 @@ Future<void> _handleValidatePayments() async {
               ),
             ),
             const SizedBox(height: 20),
+            // ── Détection d'anomalies EDO ──────────────────────────────
+            _buildAnomalyCard(group),
+            const SizedBox(height: 20),
             const Text(
               'Évolution du Fonds de Réserve F(t)',
               style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
@@ -405,6 +492,13 @@ Future<void> _handleValidatePayments() async {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            GlassButton(
+              label: 'Demandes d\'adhésion',
+              icon: Icons.person_add_alt_1_rounded,
+              impact: HapticImpact.medium,
+              onPressed: _handleJoinRequests,
+            ),
             const SizedBox(height: 24),
             const Text(
               'Gestion des Participants',
@@ -423,6 +517,45 @@ Future<void> _handleValidatePayments() async {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAnomalyCard(LikelembaGroup group) {
+    final reserveFund = group.currentReserveFund;
+    final target = group.netJackpot;
+    final ratio = target > 0 ? reserveFund / target : 1.0;
+
+    // Score de risque EDO : basé sur le ratio fonds/cible et le retard de cycle
+    double riskLevel;
+    String message;
+
+    if (ratio < 0.1) {
+      riskLevel = 0.95;
+      message = 'Fonds de réserve critique (${(ratio * 100).toStringAsFixed(1)}% de l\'objectif). '
+          'Intervention immédiate requise.';
+    } else if (ratio < 0.2) {
+      riskLevel = 0.75;
+      message = 'Fonds sous le seuil de sécurité (20%). Risque de défaut élevé si un membre demande une sortie.';
+    } else if (group.isLocked) {
+      riskLevel = 0.55;
+      message = 'Groupe verrouillé. Les nouvelles contributions sont bloquées. Déverrouillez pour reprendre le cycle.';
+    } else if (ratio < 0.5) {
+      riskLevel = 0.35;
+      message = 'Fonds en cours de constitution (${(ratio * 100).toStringAsFixed(1)}%). Cycle en bonne progression.';
+    } else {
+      riskLevel = 0.1;
+      message = 'Fonds de réserve sain. Le modèle EDO indique une solvabilité stable sur le cycle actuel.';
+    }
+
+    return AnomalyDetectionCard(
+      riskLevel: riskLevel,
+      message: message,
+      onCorrectiveAction: riskLevel > 0.7
+          ? () {
+              _logger.w('$tag._buildAnomalyCard - Action corrective: déverrouillage forcé.');
+              if (group.isLocked) _handleLockGroup();
+            }
+          : null,
     );
   }
 
@@ -445,37 +578,18 @@ Future<void> _handleValidatePayments() async {
   }
 
   Widget _buildMemberSegmentedList(LikelembaGroup group) {
-    final int totalMembers = group.memberCount;
-    final int upToDate = (totalMembers * 0.7).round();
-    final int future = (totalMembers * 0.2).round();
-    final int late = totalMembers - upToDate - future;
-
-    final segments = [
-      {'title': 'Contributeurs', 'count': upToDate, 'icon': Icons.check_circle, 'color': Colors.greenAccent},
-      {'title': 'Engagements futurs', 'count': future, 'icon': Icons.schedule, 'color': Colors.orangeAccent},
-      {'title': 'Retards', 'count': late, 'icon': Icons.warning, 'color': Colors.redAccent},
-    ];
-
-    return LiquidGlassCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: segments.map((seg) {
-          return ListTile(
-            leading: Icon(seg['icon'] as IconData, color: seg['color'] as Color),
-            title: Text(seg['title'] as String, style: const TextStyle(color: Colors.white)),
-            trailing: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: (seg['color'] as Color).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text('${seg['count']}', style: TextStyle(color: seg['color'] as Color, fontWeight: FontWeight.bold)),
-            ),
-            onTap: () => _logger.i('$tag - Segment sélectionné: ${seg['title']}'),
-          );
-        }).toList(),
-      ),
-    );
+    if (_segmentedMembers.isEmpty) {
+      return LiquidGlassCard(
+        padding: const EdgeInsets.all(20),
+        child: Center(
+          child: Text(
+            'Chargement des participants...',
+            style: const TextStyle(color: Colors.white54),
+          ),
+        ),
+      );
+    }
+    return MemberSegmentedList(members: _segmentedMembers);
   }
 }
 
@@ -490,11 +604,12 @@ class _MemberSelectionSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.primaryDeepBlue.withOpacity(0.95),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return Material(
+      color: AppColors.primaryDeepBlue.withOpacity(0.95),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
