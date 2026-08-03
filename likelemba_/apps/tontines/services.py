@@ -6,7 +6,7 @@ from datetime import timedelta
 import logging
 from django.utils import timezone
 from django.db import transaction
-from apps.users import models
+from django.db.models import F
 from core.exceptions import BusinessLogicError, InsufficientFundsError
 
 logger = logging.getLogger(__name__)
@@ -40,9 +40,12 @@ class LikelembaCalculator:
         if days_participated == 0:
             return Decimal('0')
 
-        # Calcul du taux de pénalité dégressif
-        alpha = alpha_0 * (1 - days_participated / total_days)
-        # Application de la pénalité
+        # Tout est fait en Decimal : alpha_0 (float, ex. penalty_rate_initial) ne peut
+        # pas être multiplié directement par un Decimal (TypeError), et le calcul
+        # financier ne doit de toute façon pas transiter par des flottants binaires.
+        alpha_0_dec = Decimal(str(alpha_0))
+        ratio = Decimal(days_participated) / Decimal(total_days)
+        alpha = alpha_0_dec * (1 - ratio)
         refund = total_contributed * (1 - alpha)
         return refund.quantize(Decimal('0.01'))
 
@@ -227,7 +230,7 @@ class MembershipService:
                 QueuePosition.objects.filter(
                     cycle=active_cycle,
                     position__gte=position_to_take
-                ).update(position=models.F('position') + 1)
+                ).update(position=F('position') + 1)
 
                 QueuePosition.objects.create(
                     cycle=active_cycle,
@@ -245,5 +248,56 @@ class MembershipService:
 
             logger.info(f"Nouveau membre {replacing_user.phone_number} ajouté au groupe {group.name}")
             return membership
-        
+
+
+class JoinRequestService:
+    """
+    Traitement des demandes d'adhésion. Extrait de JoinRequestViewSet pour être
+    partagé entre l'API REST et le tableau de bord admin servi en HTML.
+    """
+
+    @staticmethod
+    def accept(join_request, processed_by):
+        from apps.tontines.models import Membership, QueuePosition
+
+        if join_request.status != 'pending':
+            raise BusinessLogicError(
+                f"Cette demande a déjà été traitée (statut: {join_request.status})."
+            )
+
+        with transaction.atomic():
+            join_request.status = 'accepted'
+            join_request.processed_by = processed_by
+            join_request.processed_at = timezone.now()
+            join_request.save(update_fields=['status', 'processed_by', 'processed_at'])
+
+            # Rôle toujours 'member' : le rôle ne peut pas être auto-déclaré par le
+            # demandeur (risque d'élévation de privilège).
+            membership = Membership.objects.create(
+                user=join_request.user,
+                group=join_request.group,
+                role='member',
+                joined_at=timezone.now()
+            )
+
+            active_cycle = join_request.group.cycles.filter(is_active=True, is_completed=False).first()
+            if active_cycle:
+                last_pos = QueuePosition.objects.filter(cycle=active_cycle).count()
+                QueuePosition.objects.create(cycle=active_cycle, membership=membership, position=last_pos + 1)
+
+        return membership
+
+    @staticmethod
+    def reject(join_request, processed_by, response_message=''):
+        if join_request.status != 'pending':
+            raise BusinessLogicError(
+                f"Cette demande a déjà été traitée (statut: {join_request.status})."
+            )
+
+        join_request.status = 'rejected'
+        join_request.processed_by = processed_by
+        join_request.processed_at = timezone.now()
+        join_request.response_message = response_message
+        join_request.save(update_fields=['status', 'processed_by', 'processed_at', 'response_message'])
+        return join_request
 

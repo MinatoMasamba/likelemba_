@@ -19,6 +19,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('dashboard/', include('apps.dashboard.urls')),
     path('api/v1/users/', include('apps.users.urls')),
     path('api/v1/tontines/', include('apps.tontines.urls')),
     path('api/v1/transactions/', include('apps.transactions.urls')),

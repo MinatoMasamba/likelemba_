@@ -1,0 +1,19 @@
+# Bytecode Python
+__pycache__/
+*.py[cod]
+
+# Environnement / secrets
+.env
+
+# Base de données locale et logs
+db.sqlite3
+logs/*.log
+
+# Fichiers utilisateur / médias
+media/
+staticfiles/
+
+# Environnements virtuels
+.venv/
+venv/
+env/

@@ -19,8 +19,8 @@ router.register(r'join-requests', JoinRequestViewSet, basename='join-requests')
 app_name = 'tontines'
 
 urlpatterns = [
-    path('groups/<int:group_id>/members/<int:user_id>/validation/', 
-        MembershipValidationView.as_view(), 
+    path('groups/<uuid:group_id>/members/<uuid:user_id>/validation/',
+        MembershipValidationView.as_view(),
         name='member-validation'),
     path('', include(router.urls)),
 ]

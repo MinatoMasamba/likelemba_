@@ -5,8 +5,8 @@ django-cors-headers
 django-filter
 django-environ
 
-# Base de données
-#psycopg2-binary==2.9.9
+# Base de données (production uniquement — dev utilise SQLite)
+psycopg2-binary
 
 # Authentification
 djangorestframework-simplejwt

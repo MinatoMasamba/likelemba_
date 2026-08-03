@@ -1,12 +1,16 @@
 """
 Vues pour l'authentification et la gestion des utilisateurs.
 """
+import logging
+import secrets
+
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.utils.translation import gettext_lazy as _
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -24,6 +28,10 @@ from .serializers import (
 from core.permissions import IsOwnerOrAdmin
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
+
+PHONE_VERIFICATION_CACHE_KEY = 'phone_verify:{user_id}'
+PHONE_VERIFICATION_TTL_SECONDS = 300  # 5 minutes
 
 
 class RegisterView(generics.CreateAPIView):
@@ -178,15 +186,29 @@ class PhoneVerificationRequestView(APIView):
         responses={202: "Code envoyé"}
     )
     def post(self, request):
-        # Implémentation réelle : envoi SMS via Twilio ou autre
-        # Pour l'exemple, on simule
         user = request.user
-        # Générer et stocker un code (dans le cache Redis)
-        # send_sms(user.phone_number, code)
+        code = f"{secrets.randbelow(1_000_000):06d}"
+        cache.set(
+            PHONE_VERIFICATION_CACHE_KEY.format(user_id=user.id),
+            code,
+            timeout=PHONE_VERIFICATION_TTL_SECONDS
+        )
+        self._send_sms(user.phone_number, code)
         return Response(
             {"detail": "Code de vérification envoyé."},
             status=status.HTTP_202_ACCEPTED
         )
+
+    @staticmethod
+    def _send_sms(phone_number, code):
+        """
+        Envoi du SMS de vérification.
+        Aucun fournisseur SMS (Twilio ou autre) n'est câblé pour l'instant :
+        le code est journalisé pour permettre le développement et les tests
+        de bout en bout sans dépendance externe. À remplacer par un vrai
+        envoi avant mise en production.
+        """
+        logger.info("Code de vérification pour %s : %s", phone_number, code)
 
 
 class PhoneVerificationConfirmView(APIView):
@@ -204,10 +226,12 @@ class PhoneVerificationConfirmView(APIView):
         serializer.is_valid(raise_exception=True)
         code = serializer.validated_data['code']
 
-        # Vérifier le code stocké dans le cache
-        # Pour l'exemple, on accepte "123456"
-        if code == "123456":
-            user = request.user
+        user = request.user
+        cache_key = PHONE_VERIFICATION_CACHE_KEY.format(user_id=user.id)
+        expected_code = cache.get(cache_key)
+
+        if expected_code is not None and secrets.compare_digest(code, expected_code):
+            cache.delete(cache_key)
             user.phone_verified = True
             user.save(update_fields=['phone_verified'])
             return Response({"detail": "Numéro vérifié avec succès."})

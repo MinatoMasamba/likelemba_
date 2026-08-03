@@ -258,10 +258,12 @@ class JoinRequestAdmin(admin.ModelAdmin):
         for req in queryset.filter(status='pending'):
             # Crée un membership si pas déjà membre
             if not req.group.members.filter(user=req.user, is_active=True).exists():
+                # Rôle toujours 'member' : le rôle ne peut pas être auto-déclaré
+                # par le demandeur (risque d'élévation de privilège).
                 Membership.objects.create(
                     user=req.user,
                     group=req.group,
-                    role=req.user.profile.preferred_role if hasattr(req.user, 'profile') else 'member',
+                    role='member',
                     joined_at=timezone.now()
                 )
             req.status = 'accepted'

@@ -1,25 +1,32 @@
 """
 Vues pour la gestion des groupes Likelemba.
 """
-from datetime import timezone
-
-from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from apps.users import models
+from django.utils import timezone
+
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import generics, mixins, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 
-from .models import LikelembaGroup, Cycle, Membership, QueuePosition
+from apps.users.models import User
+from core.permissions import IsGroupAdmin, IsGroupMember
+
+from .models import Cycle, JoinRequest, LikelembaGroup, Membership, QueuePosition
 from .serializers import (
-    LikelembaGroupSerializer, CycleSerializer, MembershipSerializer,
-    QueuePositionSerializer, MemberExitSerializer, MemberReplacementSerializer,
-    ReserveProjectionSerializer
+    CycleSerializer,
+    JoinRequestSerializer,
+    JoinRequestUpdateSerializer,
+    LikelembaGroupSerializer,
+    MemberExitSerializer,
+    MemberReplacementSerializer,
+    MembershipSerializer,
+    QueuePositionSerializer,
+    ReserveProjectionSerializer,
 )
-from .services import MembershipService, LikelembaCalculator
-from core.permissions import IsGroupMember, IsGroupAdmin
-
-from apps.tontines import serializers
+from .services import JoinRequestService, LikelembaCalculator, MembershipService
 
 
 class LikelembaGroupViewSet(viewsets.ModelViewSet):
@@ -38,12 +45,12 @@ class LikelembaGroupViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         group = serializer.save(created_by=self.request.user)
-        # Ajouter automatiquement le créateur comme membre avec son rôle préféré
-        role = self.request.user.account_type if self.request.user.account_type in ['admin', 'participant'] else 'participant'
+        # Le créateur du groupe est toujours administrateur de ce groupe,
+        # indépendamment de son account_type global (participant/admin).
         Membership.objects.create(
             user=self.request.user,
             group=group,
-            role=role,
+            role='admin',
             joined_at=timezone.now()
         )
 
@@ -87,7 +94,6 @@ class LikelembaGroupViewSet(viewsets.ModelViewSet):
         serializer = MemberReplacementSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        from apps.users.models import User
         user = get_object_or_404(User, id=serializer.validated_data['user_id'])
 
         membership = MembershipService.replace_member(
@@ -131,84 +137,51 @@ class LikelembaGroupViewSet(viewsets.ModelViewSet):
             'days': list(range(days + 1)),
             'projection': projection
         })
-    
-    @action(detail=False, methods=['post'], url_path='join-by-code')
-    def join_by_code(self, request):
-        """Rejoindre un groupe en fournissant le code d'invitation."""
-        invite_code = request.data.get('invite_code')
-        if not invite_code:
-            return Response(
-                {"error": "Le code d'invitation est requis."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        group = get_object_or_404(LikelembaGroup, invite_code__iexact=invite_code, is_active=True)
-        user = request.user
-        
-        # Vérifier si déjà membre
-        if group.members.filter(user=user, is_active=True).exists():
-            return Response(
-                {"error": "Vous êtes déjà membre de ce groupe."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Vérifier si demande en attente
-        if JoinRequest.objects.filter(user=user, group=group, status='pending').exists():
-            return Response(
-                {"error": "Vous avez déjà une demande en attente pour ce groupe."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Créer la demande d'adhésion
-        join_request = JoinRequest.objects.create(
-            user=user,
-            group=group,
-            message=request.data.get('message', '')
-        )
-        
-        serializer = JoinRequestSerializer(join_request, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
 
+    @swagger_auto_schema(
+        method='get',
+        responses={200: LikelembaGroupSerializer}
+    )
     @action(detail=False, methods=['get', 'post'], url_path='join-by-code')
     def join_by_code(self, request):
-        """Rejoindre un groupe en fournissant le code d'invitation (GET ou POST)."""
-        # Récupérer le code soit depuis les query params (GET) soit depuis le body (POST)
+        """
+        Rejoindre un groupe via son code d'invitation.
+        GET  : prévisualise le groupe correspondant au code.
+        POST : crée une demande d'adhésion pour l'utilisateur connecté.
+        """
         invite_code = request.query_params.get('code') or request.data.get('invite_code')
-        
+
         if not invite_code:
             return Response(
                 {"error": "Le code d'invitation est requis."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         group = get_object_or_404(LikelembaGroup, invite_code__iexact=invite_code, is_active=True)
         user = request.user
-        
-        # Si méthode GET, on affiche juste les infos du groupe (prévisualisation)
+
         if request.method == 'GET':
             serializer = self.get_serializer(group)
             return Response(serializer.data)
-        
-        # POST : Création de la demande d'adhésion
+
         if group.members.filter(user=user, is_active=True).exists():
             return Response(
                 {"error": "Vous êtes déjà membre de ce groupe."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         if JoinRequest.objects.filter(user=user, group=group, status='pending').exists():
             return Response(
                 {"error": "Vous avez déjà une demande en attente pour ce groupe."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         join_request = JoinRequest.objects.create(
             user=user,
             group=group,
             message=request.data.get('message', '')
         )
-        
+
         serializer = JoinRequestSerializer(join_request, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -254,12 +227,7 @@ class QueuePositionViewSet(viewsets.ReadOnlyModelViewSet):
         if cycle_id:
             queryset = queryset.filter(cycle_id=cycle_id)
         return queryset.order_by('position')
-    
 
-from .models import JoinRequest
-from .serializers import JoinRequestSerializer, JoinRequestUpdateSerializer
-from rest_framework import viewsets, mixins
-from django.utils import timezone
 
 class JoinRequestViewSet(mixins.CreateModelMixin,
                          mixins.ListModelMixin,
@@ -269,7 +237,7 @@ class JoinRequestViewSet(mixins.CreateModelMixin,
     Gestion des demandes d'adhésion.
     - POST /join-requests/ : Créer une demande (utilisateur authentifié)
     - GET /join-requests/ : Lister ses propres demandes ou toutes si admin de groupe
-    - PATCH /join-requests/{id}/ : Accepter/refuser (admin du groupe seulement)
+    - PATCH /join-requests/{id}/accept|reject/ : Traiter une demande (admin du groupe)
     """
     queryset = JoinRequest.objects.all()
     serializer_class = JoinRequestSerializer
@@ -282,7 +250,7 @@ class JoinRequestViewSet(mixins.CreateModelMixin,
         # Lister les demandes où l'utilisateur est demandeur OU admin du groupe concerné
         groups_admin = user.memberships.filter(role='admin', is_active=True).values_list('group_id', flat=True)
         return self.queryset.filter(
-            models.Q(user=user) | models.Q(group_id__in=groups_admin)
+            Q(user=user) | Q(group_id__in=groups_admin)
         ).distinct()
 
     def get_serializer_class(self):
@@ -294,10 +262,10 @@ class JoinRequestViewSet(mixins.CreateModelMixin,
         # Vérifier que l'utilisateur n'est pas déjà membre actif
         group = serializer.validated_data['group']
         if group.members.filter(user=self.request.user, is_active=True).exists():
-            raise serializers.ValidationError("Vous êtes déjà membre de ce groupe.")
+            raise ValidationError("Vous êtes déjà membre de ce groupe.")
         # Vérifier qu'il n'y a pas déjà une demande en attente
         if JoinRequest.objects.filter(user=self.request.user, group=group, status='pending').exists():
-            raise serializers.ValidationError("Vous avez déjà une demande en attente pour ce groupe.")
+            raise ValidationError("Vous avez déjà une demande en attente pour ce groupe.")
         serializer.save(user=self.request.user)
 
     @action(detail=True, methods=['patch'], permission_classes=[IsGroupAdmin])
@@ -310,22 +278,7 @@ class JoinRequestViewSet(mixins.CreateModelMixin,
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = JoinRequestUpdateSerializer(join_request, data={'status': 'accepted'}, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(processed_by=request.user, processed_at=timezone.now())
-
-        # Créer le membership avec le rôle préféré du demandeur
-        membership = Membership.objects.create(
-            user=join_request.user,
-            group=join_request.group,
-            role=join_request.user.profile.preferred_role,
-            joined_at=timezone.now()
-        )
-        # Assigner une position dans la file d'attente (fin de file)
-        active_cycle = join_request.group.cycles.filter(is_active=True, is_completed=False).first()
-        if active_cycle:
-            last_pos = QueuePosition.objects.filter(cycle=active_cycle).count()
-            QueuePosition.objects.create(cycle=active_cycle, membership=membership, position=last_pos + 1)
+        membership = JoinRequestService.accept(join_request, processed_by=request.user)
 
         return Response({
             "detail": "Demande acceptée. L'utilisateur est maintenant membre du groupe.",
@@ -342,9 +295,11 @@ class JoinRequestViewSet(mixins.CreateModelMixin,
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = JoinRequestUpdateSerializer(join_request, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(processed_by=request.user, processed_at=timezone.now(), status='rejected')
+        JoinRequestService.reject(
+            join_request,
+            processed_by=request.user,
+            response_message=request.data.get('response_message', '')
+        )
         return Response({"detail": "Demande refusée."})
 
     @action(detail=True, methods=['patch'], permission_classes=[permissions.IsAuthenticated])
@@ -362,12 +317,29 @@ class JoinRequestViewSet(mixins.CreateModelMixin,
         join_request.save(update_fields=['status'])
         return Response({"detail": "Demande annulée."})
 
+    @action(detail=False, methods=['get'], url_path='pending-for-group')
+    def pending_for_group(self, request):
+        """Récupère toutes les demandes en attente pour un groupe donné (admin du groupe)."""
+        group_id = request.query_params.get('group_id')
+        if not group_id:
+            return Response(
+                {"error": "Le paramètre 'group_id' est requis."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-from rest_framework import generics, permissions, status
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from .models import LikelembaGroup, Membership, JoinRequest
-from apps.users.models import User
+        group = get_object_or_404(LikelembaGroup, id=group_id)
+
+        if not group.members.filter(user=request.user, role='admin', is_active=True).exists():
+            raise permissions.PermissionDenied("Vous n'êtes pas administrateur de ce groupe.")
+
+        pending_requests = JoinRequest.objects.filter(
+            group=group,
+            status='pending'
+        ).select_related('user', 'user__profile').order_by('-created_at')
+
+        serializer = self.get_serializer(pending_requests, many=True)
+        return Response(serializer.data)
+
 
 class MembershipValidationView(generics.GenericAPIView):
     """
@@ -380,7 +352,6 @@ class MembershipValidationView(generics.GenericAPIView):
         group = get_object_or_404(LikelembaGroup, id=group_id, is_active=True)
         user = get_object_or_404(User, id=user_id)
 
-        # Vérifier si l'utilisateur est déjà membre actif
         membership = Membership.objects.filter(
             group=group,
             user=user,
@@ -390,13 +361,12 @@ class MembershipValidationView(generics.GenericAPIView):
         if membership:
             return Response({
                 'status': 'member',
-                'message': 'L\'utilisateur est déjà membre actif.',
+                'message': "L'utilisateur est déjà membre actif.",
                 'membership_id': str(membership.id),
                 'role': membership.role,
                 'joined_at': membership.joined_at,
             })
 
-        # Vérifier s'il y a une demande en attente
         pending_request = JoinRequest.objects.filter(
             group=group,
             user=user,
@@ -406,37 +376,12 @@ class MembershipValidationView(generics.GenericAPIView):
         if pending_request:
             return Response({
                 'status': 'pending',
-                'message': 'Une demande d\'adhésion est en attente de validation.',
+                'message': "Une demande d'adhésion est en attente de validation.",
                 'join_request_id': str(pending_request.id),
                 'created_at': pending_request.created_at,
             })
 
-        # Ni membre ni demande en attente
         return Response({
             'status': 'none',
-            'message': 'L\'utilisateur n\'a pas de demande d\'adhésion pour ce groupe.',
+            'message': "L'utilisateur n'a pas de demande d'adhésion pour ce groupe.",
         })
-    
-@action(detail=False, methods=['get'], url_path='pending-for-group')
-def pending_for_group(self, request):
-    """Récupère toutes les demandes en attente pour un groupe donné."""
-    group_id = request.query_params.get('group_id')
-    if not group_id:
-        return Response(
-            {"error": "Le paramètre 'group_id' est requis."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    group = get_object_or_404(LikelembaGroup, id=group_id)
-    
-    # Vérifier que l'utilisateur est admin de ce groupe
-    if not group.members.filter(user=request.user, role='admin', is_active=True).exists():
-        raise permissions.PermissionDenied("Vous n'êtes pas administrateur de ce groupe.")
-    
-    pending_requests = JoinRequest.objects.filter(
-        group=group,
-        status='pending'
-    ).select_related('user', 'user__profile').order_by('-created_at')
-    
-    serializer = self.get_serializer(pending_requests, many=True)
-    return Response(serializer.data)

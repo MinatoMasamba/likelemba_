@@ -3,6 +3,7 @@ Services pour les projections financières et l'analyse de risque.
 """
 import numpy as np
 from decimal import Decimal
+from django.db.models import Sum
 from django.utils import timezone
 from apps.tontines.services import LikelembaCalculator
 
@@ -101,3 +102,82 @@ class ProjectionService:
             })
 
         return results
+
+
+class GroupHistoryService:
+    """
+    Reconstitue l'évolution *observée* d'un groupe (argent et membres) à partir
+    des mouvements réels enregistrés, par opposition à ProjectionService qui
+    calcule une trajectoire *théorique* à partir des paramètres de l'EDO.
+    """
+
+    @staticmethod
+    def money_summary(group) -> dict:
+        """Total cumulé, depuis le début du groupe, de chaque type de flux."""
+        from apps.transactions.models import Contribution, Payout, Refund
+
+        total_contributed = Contribution.objects.filter(
+            membership__group=group, status='validated'
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+        total_paid_out = Payout.objects.filter(
+            membership__group=group
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+        total_refunded = Refund.objects.filter(
+            membership__group=group
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+        return {
+            'reserve_amount': group.reserve_amount,
+            'total_contributed': total_contributed,
+            'total_paid_out': total_paid_out,
+            'total_refunded': total_refunded,
+        }
+
+    @staticmethod
+    def reserve_timeline(group) -> list:
+        """
+        Série chronologique du fonds de réserve reconstituée à partir des
+        mouvements réels : chaque cotisation validée ajoute `security_levy`
+        au fonds, chaque remboursement en soustrait son montant. C'est
+        l'évolution effectivement survenue, pas une projection.
+        """
+        from apps.transactions.models import Contribution, Refund
+
+        events = []
+        for c in Contribution.objects.filter(
+            membership__group=group, status='validated'
+        ).exclude(validated_at__isnull=True):
+            events.append((c.validated_at, group.security_levy))
+
+        for r in Refund.objects.filter(membership__group=group).exclude(processed_at__isnull=True):
+            events.append((r.processed_at, -r.amount))
+
+        events.sort(key=lambda e: e[0])
+
+        timeline = []
+        running = Decimal('0')
+        for ts, delta in events:
+            running += delta
+            timeline.append({'date': ts, 'amount': running})
+        return timeline
+
+    @staticmethod
+    def member_timeline(group) -> list:
+        """Chronologie des arrivées et départs de membres, la plus récente en tête."""
+        events = []
+        for membership in group.members.select_related('user').all():
+            events.append({
+                'date': membership.joined_at,
+                'type': 'arrivee',
+                'membership': membership,
+            })
+            if membership.left_at:
+                events.append({
+                    'date': membership.left_at,
+                    'type': 'depart',
+                    'membership': membership,
+                })
+        events.sort(key=lambda e: e['date'], reverse=True)
+        return events

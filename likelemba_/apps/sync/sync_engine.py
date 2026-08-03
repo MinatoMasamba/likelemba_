@@ -3,6 +3,7 @@ Moteur de synchronisation pour traiter les lots envoyés par les clients mobiles
 """
 import logging
 from django.db import transaction
+from django.db.models import ForeignKey
 from django.utils import timezone
 from apps.sync.models import SyncBatch, SyncOperation
 from apps.transactions.models import Contribution
@@ -74,13 +75,28 @@ class SyncEngine:
             raise ValidationError(f"Type d'opération inconnu: {op.operation_type}")
 
     @classmethod
+    def _resolve_relations(cls, model_class, data):
+        """
+        Convertit les champs de relation (ex: `cycle`, `membership`) envoyés comme
+        simples identifiants texte en `<champ>_id` (ex: `cycle_id`).
+
+        Sans cette étape, `Model.objects.create(cycle=<uuid>)` échoue : Django exige
+        une instance du modèle lié pour le nom de champ nu, alors que le client mobile
+        n'envoie que l'identifiant. `<champ>_id` accepte directement la clé brute.
+        """
+        resolved = dict(data)
+        for field in model_class._meta.get_fields():
+            if isinstance(field, ForeignKey) and field.name in resolved:
+                resolved[field.attname] = resolved.pop(field.name)
+        return resolved
+
+    @classmethod
     def _create_instance(cls, model_class, data):
         """Crée une nouvelle instance."""
         # Nettoyer les données (retirer les champs locaux)
         data.pop('local_id', None)
         data.pop('is_synced', None)
-        # Gérer les relations (ForeignKey)
-        # Cette partie nécessite une adaptation selon le modèle
+        data = cls._resolve_relations(model_class, data)
         instance = model_class.objects.create(**data)
         return instance
 
@@ -91,6 +107,7 @@ class SyncEngine:
         if not instance_id:
             raise ValidationError("ID manquant pour la mise à jour.")
         instance = model_class.objects.get(id=instance_id)
+        data = cls._resolve_relations(model_class, data)
         for key, value in data.items():
             setattr(instance, key, value)
         instance.save()

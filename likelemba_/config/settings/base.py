@@ -11,11 +11,16 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--1a-(@vot#-_7wu7q6z8%7am-qnguw+n^i%u^a761@lkmq1m2b'
+# Toujours défini via l'environnement (.env en local, variables réelles en production).
+SECRET_KEY = config('SECRET_KEY')
 
-DEBUG = True  # ⚠️ Désactiver en production
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*']  #config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='localhost,127.0.0.1',
+    cast=lambda v: [s.strip() for s in v.split(',') if s.strip()]
+)
 
 # Application definition
 DJANGO_APPS = [
@@ -42,6 +47,7 @@ LOCAL_APPS = [
     'apps.transactions',
     'apps.sync',
     'apps.analytics',
+    'apps.dashboard',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -115,6 +121,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom user model
 AUTH_USER_MODEL = 'users.User'
 
+# Authentification par session pour le tableau de bord admin (apps.dashboard).
+# Indépendant du JWT utilisé par l'API REST — le dashboard est servi par Django
+# lui-même, pas consommé par un client externe.
+LOGIN_URL = 'dashboard:login'
+LOGIN_REDIRECT_URL = 'dashboard:group_list'
+LOGOUT_REDIRECT_URL = 'dashboard:login'
+
 # REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -155,6 +168,16 @@ SIMPLE_JWT = {
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # En production, spécifier les origines exactes
 CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:3000', cast=lambda v: [s.strip() for s in v.split(',')])
+
+# Cache (utilisé notamment pour les codes de vérification par SMS).
+# Redis est requis en production : LocMemCache n'est pas partagé entre workers,
+# donc un code généré par un worker ne serait pas vu par un autre.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': config('REDIS_URL', default='redis://localhost:6379/1'),
+    }
+}
 
 # Celery settings
 CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
@@ -234,3 +257,8 @@ LIKELEMBA_SETTINGS = {
     'MIN_CONTRIBUTION_AMOUNT': 500,   # Montant minimum en francs congolais
     'MAX_CONTRIBUTION_AMOUNT': 50000,
 }
+
+# Au-delà de ce nombre d'opérations, un lot de synchronisation est traité de façon
+# asynchrone (Celery) plutôt que dans le cycle requête/réponse, pour ne pas bloquer
+# le client mobile sur un gros envoi de données accumulées hors-ligne.
+SYNC_ASYNC_THRESHOLD = config('SYNC_ASYNC_THRESHOLD', default=20, cast=int)

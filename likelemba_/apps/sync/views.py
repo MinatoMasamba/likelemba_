@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
@@ -38,7 +39,23 @@ class SyncUploadView(generics.CreateAPIView):
                 data=op_data['data']
             )
 
-        # Traiter immédiatement (ou déléguer à Celery pour les gros lots)
+        # Les petits lots sont traités immédiatement pour renvoyer le mapping
+        # local_id -> server_id tout de suite. Les gros lots sont délégués à Celery
+        # pour ne pas bloquer la requête du client mobile ; celui-ci doit alors
+        # interroger SyncStatusView pour connaître le résultat.
+        if batch.operations_count > settings.SYNC_ASYNC_THRESHOLD:
+            from tasks.sync_tasks import process_sync_batch_async
+            process_sync_batch_async.delay(str(batch.id))
+            return Response({
+                'batch_id': str(batch.id),
+                'status': batch.status,
+                'success_count': 0,
+                'failure_count': 0,
+                'mapping': {},
+                'detail': "Lot volumineux : traitement en arrière-plan. "
+                          "Interrogez /sync/status/<batch_id>/ pour suivre l'avancement.",
+            }, status=status.HTTP_202_ACCEPTED)
+
         batch = SyncEngine.process_batch(batch)
 
         # Préparer la réponse avec les mappings local_id -> server_id
