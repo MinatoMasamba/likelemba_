@@ -21,10 +21,6 @@ python-decouple
 Pillow
 django-storages
 
-# Calcul scientifique (pour EDO et projections)
-numpy
-scipy
-
 # Production
 gunicorn
 whitenoise

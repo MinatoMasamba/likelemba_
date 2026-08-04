@@ -1,7 +1,6 @@
 """
 Services pour les projections financières et l'analyse de risque.
 """
-import numpy as np
 from decimal import Decimal
 from django.db.models import Sum
 from django.utils import timezone
@@ -29,7 +28,7 @@ class ProjectionService:
 
         Retourne les valeurs de t et F(t).
         """
-        t_values = np.linspace(0, T, num=T+1)
+        t_values = list(range(T + 1))
         F_values = []
         current_F = float(initial_reserve)
 
@@ -52,7 +51,7 @@ class ProjectionService:
             F_values.append(current_F)
 
         return {
-            't': t_values.tolist(),
+            't': t_values,
             'F': F_values
         }
 
