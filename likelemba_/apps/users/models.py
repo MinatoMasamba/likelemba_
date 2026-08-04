@@ -53,7 +53,8 @@ class User(AbstractUser):
     email = models.EmailField(
         blank=True,
         null=True,
-        help_text="Adresse email (optionnelle)"
+        unique=True,
+        help_text="Adresse email (utilisée pour la connexion au tableau de bord)"
     )
     full_name = models.CharField(
         max_length=255,

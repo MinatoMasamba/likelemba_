@@ -20,6 +20,20 @@
   }
 }
 
+/* Choix explicite de thème (bouton sur les pages de connexion), mémorisé en
+   localStorage sous "likelemba_theme" — prioritaire sur la préférence système
+   et appliqué à tout le tableau de bord, pas seulement aux pages d'auth. */
+:root[data-theme="dark"] {
+  --paper: #0F1A1B; --paper-raised: #16262A; --ink: #E7EEEC; --ink-soft: #9FB0AE;
+  --line: #28393A; --reserve: #56C79E; --reserve-soft: #16302A;
+  --vision: #D9A83F; --vision-soft: #33290F; --critical: #E38267; --critical-soft: #33201A;
+}
+:root[data-theme="light"] {
+  --paper: #F3F5F3; --paper-raised: #FFFFFF; --ink: #16262A; --ink-soft: #55686A;
+  --line: #D7DFDC; --reserve: #2E7D68; --reserve-soft: #E4F1EC;
+  --vision: #A8791F; --vision-soft: #F6EEDA; --critical: #AB4331; --critical-soft: #F8E6E1;
+}
+
 * { box-sizing: border-box; }
 
 body {
@@ -74,6 +88,23 @@ code {
   font-size: 13px;
   color: var(--ink-soft);
 }
+
+.theme-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+  padding: 0;
+  transition: border-color .2s ease;
+}
+.theme-toggle:hover { border-color: var(--reserve); }
 
 .page {
   max-width: 900px;

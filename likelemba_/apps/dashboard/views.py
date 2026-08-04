@@ -4,6 +4,7 @@ du JWT utilisé par l'API REST (/api/v1/...). Ce tableau réutilise directement
 les services métier existants — aucune règle n'est dupliquée depuis l'API.
 """
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -16,7 +17,25 @@ from apps.transactions.services import TransactionService
 from apps.users.models import User
 from core.exceptions import AppException
 
-from .forms import MemberReplaceForm
+from .forms import MemberReplaceForm, SignupForm
+
+
+def signup(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard:group_list')
+
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user, backend='apps.users.backends.EmailBackend')
+            messages.success(request, "Compte créé avec succès. Bienvenue !")
+            return redirect('dashboard:group_list')
+    else:
+        initial_role = 'admin' if request.GET.get('role') == 'admin' else 'participant'
+        form = SignupForm(initial={'account_type': initial_role})
+
+    return render(request, 'dashboard/signup.html', {'form': form})
 
 
 def _get_membership_or_404(request, group_id):

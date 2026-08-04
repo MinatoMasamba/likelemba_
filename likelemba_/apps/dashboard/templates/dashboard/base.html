@@ -4,7 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Tableau de bord{% endblock %} — Likelemba Sécurisé</title>
+  <link rel="icon" href="{% static 'dashboard/img/favicon.png' %}">
   <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('likelemba_theme');
+        if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   {% if user.is_authenticated %}
@@ -12,6 +21,9 @@
     <a class="brand" href="{% url 'dashboard:group_list' %}">Likelemba Sécurisé</a>
     <div class="topbar-user">
       <span>{{ user.full_name }}</span>
+      <button type="button" class="theme-toggle" id="themeToggle" aria-label="Changer de thème">
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path id="themeIconPath" d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23Z"/></svg>
+      </button>
       <form method="post" action="{% url 'dashboard:logout' %}">
         {% csrf_token %}
         <button type="submit" class="link-button">Déconnexion</button>
@@ -31,5 +43,7 @@
 
     {% block content %}{% endblock %}
   </main>
+
+  <script src="{% static 'dashboard/theme.js' %}"></script>
 </body>
 </html>

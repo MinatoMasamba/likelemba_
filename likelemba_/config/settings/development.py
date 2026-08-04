@@ -6,5 +6,7 @@ from .base import *  # noqa: F401,F403
 
 DEBUG = True
 
-# Emails et erreurs affichés en console plutôt qu'envoyés réellement.
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND vient de base.py (lu depuis .env) : si aucun SMTP n'est
+# configuré, il retombe sur la console ; s'il l'est, les emails partent
+# réellement même en développement, pour pouvoir tester le flux de bout en
+# bout (connexion, réinitialisation de mot de passe).

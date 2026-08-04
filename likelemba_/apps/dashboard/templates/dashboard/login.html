@@ -1,26 +1,50 @@
-{% extends "dashboard/base.html" %}
+{% extends "dashboard/auth_base.html" %}
 {% block title %}Connexion{% endblock %}
-{% block content %}
-<div class="auth-wrap">
-  <form method="post" class="card auth-card">
-    {% csrf_token %}
-    <h1>Likelemba Sécurisé</h1>
-    <p class="muted">Connectez-vous pour suivre vos groupes.</p>
+{% block auth_content %}
 
-    {% if form.non_field_errors %}
-      <ul class="messages">
-        {% for error in form.non_field_errors %}<li class="message message-error">{{ error }}</li>{% endfor %}
-      </ul>
-    {% endif %}
+<div class="auth-tabs">
+  <a href="?role=participant" class="auth-tab-pill {% if request.GET.role != 'admin' %}is-active{% endif %}" data-role-tab="participant">Membre</a>
+  <a href="?role=admin" class="auth-tab-pill {% if request.GET.role == 'admin' %}is-active{% endif %}" data-role-tab="admin">Administrateur</a>
+</div>
 
+<div class="auth-mode-tabs">
+  <span class="auth-mode-tab is-active">Se connecter</span>
+  <a href="{% url 'dashboard:signup' %}{% if request.GET.role %}?role={{ request.GET.role }}{% endif %}" class="auth-mode-tab">Créer un compte</a>
+</div>
+
+<h1 class="auth-title">Bienvenue</h1>
+<p class="auth-subtitle">
+  {% if request.GET.role == 'admin' %}Connectez-vous pour administrer vos tontines.{% else %}Connectez-vous pour gérer vos tontines.{% endif %}
+</p>
+
+<form method="post">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <ul class="messages">
+      {% for error in form.non_field_errors %}<li class="message message-error">{{ error }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  <div class="auth-field">
     <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
     {{ form.username }}
+    {% if form.username.errors %}<p class="field-errors">{{ form.username.errors|join:" " }}</p>{% endif %}
+  </div>
 
-    <label for="{{ form.password.id_for_label }}">Mot de passe</label>
+  <div class="auth-field">
+    <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
     {{ form.password }}
+    {% if form.password.errors %}<p class="field-errors">{{ form.password.errors|join:" " }}</p>{% endif %}
+  </div>
 
-    <button type="submit" class="btn btn-primary">Se connecter</button>
-    <input type="hidden" name="next" value="{{ next }}">
-  </form>
+  <input type="hidden" name="next" value="{{ next }}">
+  <button type="submit" class="auth-submit">Continuer</button>
+</form>
+
+<div class="auth-links">
+  <a href="{% url 'dashboard:password_reset' %}">Mot de passe oublié ?</a>
+  <a href="{% url 'dashboard:signup' %}" class="primary">Créer un compte</a>
 </div>
+
 {% endblock %}

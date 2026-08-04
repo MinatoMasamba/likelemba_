@@ -128,6 +128,26 @@ LOGIN_URL = 'dashboard:login'
 LOGIN_REDIRECT_URL = 'dashboard:group_list'
 LOGOUT_REDIRECT_URL = 'dashboard:login'
 
+# EmailBackend gère la connexion par email (tableau de bord) ; ModelBackend
+# reste nécessaire pour /admin/ et pour le JWT de l'API qui s'appuient sur
+# USERNAME_FIELD (numéro de téléphone).
+AUTHENTICATION_BACKENDS = [
+    'apps.users.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Email (notifications, réinitialisation de mot de passe depuis le tableau de
+# bord). Backend "console" par défaut tant que rien n'est configuré dans
+# .env — aucun envoi réel silencieux.
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='localhost')
+EMAIL_PORT = config('EMAIL_PORT', default=25, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=False, cast=bool)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='no-reply@likelemba.cd')
+
 # REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
