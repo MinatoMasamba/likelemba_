@@ -126,7 +126,7 @@ AUTH_USER_MODEL = 'users.User'
 # Indépendant du JWT utilisé par l'API REST — le dashboard est servi par Django
 # lui-même, pas consommé par un client externe.
 LOGIN_URL = 'dashboard:login'
-LOGIN_REDIRECT_URL = 'dashboard:group_list'
+LOGIN_REDIRECT_URL = 'dashboard:post_login_redirect'
 LOGOUT_REDIRECT_URL = 'dashboard:login'
 
 # EmailBackend gère la connexion par email (tableau de bord) ; ModelBackend

@@ -40,6 +40,20 @@ _LANDING_PAGE_PATH = (
 )
 
 
+def _redirect_url_after_auth(user):
+    """
+    Détermine où envoyer un utilisateur après connexion/inscription :
+    - admin avec un groupe déjà administré -> son tableau de bord admin
+    - admin sans groupe -> création de sa première tontine
+    - participant -> espace membre
+    """
+    if user.account_type == 'admin':
+        if _admin_group_ids(user):
+            return 'dashboard:admin_dashboard'
+        return 'dashboard:admin_group_create'
+    return 'dashboard:group_list'
+
+
 def landing(request):
     """
     Page d'accueil publique (prototype de design importé tel quel : voir
@@ -49,7 +63,7 @@ def landing(request):
     détruirait en tentant de la résoudre comme des variables de contexte.
     """
     if request.user.is_authenticated:
-        return redirect('dashboard:group_list')
+        return redirect(_redirect_url_after_auth(request.user))
 
     html = _LANDING_PAGE_PATH.read_text(encoding='utf-8')
     html = html.replace('__SUPPORT_JS_URL__', static('dashboard/landing/support.js'))
@@ -61,7 +75,7 @@ def landing(request):
 
 def signup(request):
     if request.user.is_authenticated:
-        return redirect('dashboard:group_list')
+        return redirect(_redirect_url_after_auth(request.user))
 
     if request.method == 'POST':
         form = SignupForm(request.POST)
@@ -69,14 +83,22 @@ def signup(request):
             user = form.save()
             login(request, user, backend='apps.users.backends.EmailBackend')
             messages.success(request, "Compte créé avec succès. Bienvenue !")
-            if user.account_type == 'admin':
-                return redirect('dashboard:admin_group_create')
-            return redirect('dashboard:group_list')
+            return redirect(_redirect_url_after_auth(user))
     else:
         initial_role = 'admin' if request.GET.get('role') == 'admin' else 'participant'
         form = SignupForm(initial={'account_type': initial_role})
 
     return render(request, 'dashboard/signup.html', {'form': form})
+
+
+@login_required
+def post_login_redirect(request):
+    """
+    Cible de LOGIN_REDIRECT_URL : redirige vers l'espace admin ou membre
+    selon le statut de l'utilisateur, au lieu d'envoyer tout le monde vers
+    l'espace membre par défaut.
+    """
+    return redirect(_redirect_url_after_auth(request.user))
 
 
 def _get_membership_or_404(request, group_id):

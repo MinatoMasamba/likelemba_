@@ -17,6 +17,7 @@ urlpatterns = [
     ),
     path('signup/', views.signup, name='signup'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('post-connexion/', views.post_login_redirect, name='post_login_redirect'),
 
     path(
         'mot-de-passe-oublie/',
