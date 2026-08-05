@@ -106,9 +106,9 @@ class SignupForm(forms.Form):
 
 
 class MemberReplaceForm(forms.Form):
-    phone_number = forms.CharField(
-        label="Téléphone du membre",
-        widget=forms.TextInput(attrs={'placeholder': '+243900000000'}),
+    member_code = forms.CharField(
+        label="Code membre",
+        widget=forms.TextInput(attrs={'placeholder': 'LK-42', 'autocapitalize': 'characters'}),
     )
     position = forms.IntegerField(label="Position dans la file (optionnel)", required=False, min_value=1)
 
@@ -125,26 +125,25 @@ class GroupCreateForm(forms.ModelForm):
     class Meta:
         model = LikelembaGroup
         fields = [
-            'name', 'description', 'contribution_amount', 'security_levy',
-            'cycle_duration_days', 'distribution_interval_days',
+            'name', 'description', 'contribution_amount', 'distribution_interval_days',
         ]
         labels = {
             'name': "Nom de la tontine",
             'description': "Message de bienvenue (optionnel)",
             'contribution_amount': "Cotisation journalière (FC)",
-            'security_levy': "Prélèvement de sécurité par cotisation (FC)",
-            'cycle_duration_days': "Durée totale du cycle (jours)",
             'distribution_interval_days': "Intervalle entre deux cagnottes (jours)",
         }
         help_texts = {
-            'security_levy': "Environ 10 % de la cotisation est une valeur courante.",
+            'distribution_interval_days': (
+                "La durée totale du cycle et le prélèvement de sécurité sont "
+                "calculés automatiquement à partir de cet intervalle et de la "
+                "cotisation."
+            ),
         }
         widgets = {
             'name': forms.TextInput(attrs={'autofocus': True, 'placeholder': 'Ex. : Tontine des voisins'}),
             'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Un mot pour les futurs membres…'}),
             'contribution_amount': forms.NumberInput(attrs={'placeholder': '5000'}),
-            'security_levy': forms.NumberInput(attrs={'placeholder': '500'}),
-            'cycle_duration_days': forms.NumberInput(attrs={'placeholder': '70'}),
             'distribution_interval_days': forms.NumberInput(attrs={'placeholder': '3'}),
         }
 

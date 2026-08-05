@@ -107,6 +107,23 @@ class User(AbstractUser):
     def get_short_name(self):
         return self.full_name.split()[0] if self.full_name else self.phone_number
 
+    @property
+    def member_code(self):
+        """Code unique et stable identifiant ce membre (à partager pour être ajouté à une tontine)."""
+        return f"LK-{self.id}"
+
+    @classmethod
+    def from_member_code(cls, code):
+        """Retrouve l'utilisateur correspondant à un member_code (ex: 'LK-42'), ou None."""
+        code = (code or '').strip().upper()
+        if not code.startswith('LK-'):
+            return None
+        try:
+            user_id = int(code[3:])
+        except ValueError:
+            return None
+        return cls.objects.filter(id=user_id).first()
+
 
 class UserProfile(BaseModel):
     """

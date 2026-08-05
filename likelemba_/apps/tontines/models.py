@@ -169,6 +169,16 @@ class LikelembaGroup(BaseModel):
             if not LikelembaGroup.objects.filter(invite_code=code).exists():
                 return code
 
+    def recompute_cycle_duration(self, save=True):
+        """
+        Durée totale du cycle (T) = intervalle entre deux cagnottes (k) x nombre
+        de membres actifs : chaque membre reçoit une fois la cagnotte par cycle,
+        au rythme d'une distribution tous les k jours.
+        """
+        self.cycle_duration_days = max(self.number_of_members, 1) * self.distribution_interval_days
+        if save:
+            self.save(update_fields=['cycle_duration_days'])
+
     def __str__(self):
         return f"{self.name} ({'Actif' if self.is_active else 'Inactif'})"
 

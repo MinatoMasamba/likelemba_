@@ -49,8 +49,8 @@
     <form method="post" action="{% url 'dashboard:member_replace' group_id=group.id %}">
       {% csrf_token %}
       <div class="lk-field">
-        <label for="{{ replace_form.phone_number.id_for_label }}">{{ replace_form.phone_number.label }}</label>
-        {{ replace_form.phone_number }}
+        <label for="{{ replace_form.member_code.id_for_label }}">{{ replace_form.member_code.label }}</label>
+        {{ replace_form.member_code }}
       </div>
       <div class="lk-field">
         <label for="{{ replace_form.position.id_for_label }}">{{ replace_form.position.label }}</label>

@@ -786,7 +786,7 @@ def profile(request):
         }
         for m in active_memberships
     ]
-    user_code = f"LK-{str(request.user.id).split('-')[0].upper()}"
+    user_code = request.user.member_code
 
     return render(request, 'dashboard/profile.html', {
         'profile': profile_obj,
@@ -862,12 +862,12 @@ def member_replace(request, group_id):
 
     form = MemberReplaceForm(request.POST)
     if not form.is_valid():
-        messages.error(request, "Formulaire invalide : numéro de téléphone requis.")
+        messages.error(request, "Formulaire invalide : code membre requis.")
         return redirect('dashboard:group_detail', group_id=group.id)
 
-    replacing_user = User.objects.filter(phone_number=form.cleaned_data['phone_number']).first()
+    replacing_user = User.from_member_code(form.cleaned_data['member_code'])
     if not replacing_user:
-        messages.error(request, "Aucun utilisateur avec ce numéro de téléphone.")
+        messages.error(request, "Aucun utilisateur avec ce code membre.")
         return redirect('dashboard:group_detail', group_id=group.id)
 
     try:
@@ -1024,8 +1024,13 @@ def admin_group_create(request):
         group = form.save(commit=False)
         group.created_by = request.user
         group.started_at = timezone.now()
+        # Prélèvement de sécurité fixé automatiquement à 10 % de la cotisation.
+        group.security_levy = (group.contribution_amount * Decimal('0.10')).quantize(Decimal('0.01'))
+        # Un seul membre (l'admin) à cet instant ; recalculé après sa création ci-dessous.
+        group.cycle_duration_days = group.distribution_interval_days
         group.save()
         Membership.objects.create(user=request.user, group=group, role='admin')
+        group.recompute_cycle_duration()
         Cycle.objects.create(group=group, sequence_number=1, start_date=timezone.now())
         messages.success(request, f"Groupe « {group.name} » créé. Code d'invitation : {group.invite_code}.")
         return redirect('dashboard:group_detail', group_id=group.id)

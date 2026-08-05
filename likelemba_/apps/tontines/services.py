@@ -182,6 +182,7 @@ class MembershipService:
             membership.is_active = False
             membership.left_at = exit_date
             membership.save(update_fields=['is_active', 'left_at'])
+            group.recompute_cycle_duration()
 
             # Retirer de la file d'attente
             QueuePosition.objects.filter(
@@ -223,6 +224,7 @@ class MembershipService:
                 joined_at=timezone.now(),
                 is_active=True
             )
+            group.recompute_cycle_duration()
 
             # Déterminer la position dans la file
             if position_to_take is not None:
@@ -270,7 +272,8 @@ class MembershipService:
             raise BusinessLogicError("Le groupe cible n'a pas de cycle actif.")
 
         with transaction.atomic():
-            source_cycle = membership.group.cycles.filter(is_active=True, is_completed=False).first()
+            source_group = membership.group
+            source_cycle = source_group.cycles.filter(is_active=True, is_completed=False).first()
             if source_cycle:
                 QueuePosition.objects.filter(cycle=source_cycle, membership=membership).delete()
                 remaining = QueuePosition.objects.filter(cycle=source_cycle).order_by('position')
@@ -285,6 +288,8 @@ class MembershipService:
             membership.has_received_payout = False
             membership.joined_at = timezone.now()
             membership.save()
+            source_group.recompute_cycle_duration()
+            target_group.recompute_cycle_duration()
 
             last_position = QueuePosition.objects.filter(cycle=target_cycle).count()
             QueuePosition.objects.create(cycle=target_cycle, membership=membership, position=last_position + 1)
@@ -322,6 +327,7 @@ class JoinRequestService:
                 role='member',
                 joined_at=timezone.now()
             )
+            join_request.group.recompute_cycle_duration()
 
             active_cycle = join_request.group.cycles.filter(is_active=True, is_completed=False).first()
             if active_cycle:
