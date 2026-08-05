@@ -69,6 +69,8 @@ def signup(request):
             user = form.save()
             login(request, user, backend='apps.users.backends.EmailBackend')
             messages.success(request, "Compte créé avec succès. Bienvenue !")
+            if user.account_type == 'admin':
+                return redirect('dashboard:admin_group_create')
             return redirect('dashboard:group_list')
     else:
         initial_role = 'admin' if request.GET.get('role') == 'admin' else 'participant'
