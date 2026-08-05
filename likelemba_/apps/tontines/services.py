@@ -207,7 +207,10 @@ class MembershipService:
     @staticmethod
     def replace_member(group, replacing_user, position_to_take=None):
         """
-        Ajoute un nouveau membre pour remplacer un membre parti.
+        Ajoute un nouveau membre pour remplacer un membre parti, ou réactive
+        son ancienne adhésion s'il avait déjà fait partie de ce groupe (la
+        contrainte d'unicité user+group interdit une deuxième ligne
+        Membership pour le même couple).
         """
         from apps.tontines.models import Membership, Cycle, QueuePosition
 
@@ -215,15 +218,30 @@ class MembershipService:
         if not active_cycle:
             raise BusinessLogicError("Aucun cycle actif.")
 
+        existing = Membership.objects.filter(user=replacing_user, group=group).first()
+        if existing and existing.is_active:
+            raise BusinessLogicError("Cet utilisateur est déjà membre de ce groupe.")
+
         with transaction.atomic():
-            # Créer l'adhésion
-            membership = Membership.objects.create(
-                user=replacing_user,
-                group=group,
-                role='member',
-                joined_at=timezone.now(),
-                is_active=True
-            )
+            if existing:
+                existing.role = 'member'
+                existing.joined_at = timezone.now()
+                existing.left_at = None
+                existing.is_active = True
+                existing.total_contributed = Decimal('0')
+                existing.total_received = Decimal('0')
+                existing.debt_count = 0
+                existing.has_received_payout = False
+                existing.save()
+                membership = existing
+            else:
+                membership = Membership.objects.create(
+                    user=replacing_user,
+                    group=group,
+                    role='member',
+                    joined_at=timezone.now(),
+                    is_active=True
+                )
             group.recompute_cycle_duration()
 
             # Déterminer la position dans la file
@@ -313,6 +331,10 @@ class JoinRequestService:
                 f"Cette demande a déjà été traitée (statut: {join_request.status})."
             )
 
+        existing = Membership.objects.filter(user=join_request.user, group=join_request.group).first()
+        if existing and existing.is_active:
+            raise BusinessLogicError("Cet utilisateur est déjà membre de ce groupe.")
+
         with transaction.atomic():
             join_request.status = 'accepted'
             join_request.processed_by = processed_by
@@ -321,12 +343,26 @@ class JoinRequestService:
 
             # Rôle toujours 'member' : le rôle ne peut pas être auto-déclaré par le
             # demandeur (risque d'élévation de privilège).
-            membership = Membership.objects.create(
-                user=join_request.user,
-                group=join_request.group,
-                role='member',
-                joined_at=timezone.now()
-            )
+            if existing:
+                # Ancien membre parti : on réactive son adhésion plutôt que
+                # d'en créer une nouvelle (contrainte d'unicité user+group).
+                existing.role = 'member'
+                existing.joined_at = timezone.now()
+                existing.left_at = None
+                existing.is_active = True
+                existing.total_contributed = Decimal('0')
+                existing.total_received = Decimal('0')
+                existing.debt_count = 0
+                existing.has_received_payout = False
+                existing.save()
+                membership = existing
+            else:
+                membership = Membership.objects.create(
+                    user=join_request.user,
+                    group=join_request.group,
+                    role='member',
+                    joined_at=timezone.now()
+                )
             join_request.group.recompute_cycle_duration()
 
             active_cycle = join_request.group.cycles.filter(is_active=True, is_completed=False).first()
