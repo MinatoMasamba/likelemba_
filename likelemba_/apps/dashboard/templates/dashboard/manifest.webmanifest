@@ -1,0 +1,26 @@
+{% load static %}{
+  "name": "Likelemba Sécurisé",
+  "short_name": "Likelemba",
+  "description": "Gérez vos tontines Likelemba : cotisations, cagnottes et fonds de réserve.",
+  "start_url": "{% url 'dashboard:group_list' %}",
+  "scope": "{% url 'dashboard:group_list' %}",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B1310",
+  "theme_color": "#0E5C46",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "{% static 'dashboard/img/favicon.png' %}",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "{% static 'dashboard/img/icon-512.png' %}",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

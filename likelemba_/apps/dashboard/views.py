@@ -73,6 +73,21 @@ def landing(request):
     return HttpResponse(html)
 
 
+def manifest(request):
+    """Manifest PWA : condition requise (avec le service worker) pour que le
+    navigateur propose l'installation de l'application via beforeinstallprompt."""
+    return render(request, 'dashboard/manifest.webmanifest', content_type='application/manifest+json')
+
+
+def service_worker(request):
+    """
+    Servi sous /dashboard/ (et non /static/) pour que son scope par défaut
+    couvre toutes les pages du tableau de bord, sans header
+    Service-Worker-Allowed supplémentaire.
+    """
+    return render(request, 'dashboard/sw.js', content_type='application/javascript')
+
+
 def signup(request):
     if request.user.is_authenticated:
         return redirect(_redirect_url_after_auth(request.user))

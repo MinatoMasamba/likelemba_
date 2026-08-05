@@ -18,6 +18,8 @@ urlpatterns = [
     path('signup/', views.signup, name='signup'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('post-connexion/', views.post_login_redirect, name='post_login_redirect'),
+    path('manifest.webmanifest', views.manifest, name='manifest'),
+    path('sw.js', views.service_worker, name='service_worker'),
 
     path(
         'mot-de-passe-oublie/',
