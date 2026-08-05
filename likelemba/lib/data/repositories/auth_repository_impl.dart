@@ -305,7 +305,7 @@ Future<Either<Failure, entity.User>> registerUser({
       ..phoneNumber = phoneNumber
       ..pinHash = _hashPin(pin)
       ..createdAt = DateTime.now()
-      ..role = UserRole.member
+      ..role = role == entity.UserRole.admin ? UserRole.admin : UserRole.member
       ..status = UserStatus.active
       ..trustScore = 100
       ..isBiometricEnabled = false;
