@@ -1,0 +1,37 @@
+{% extends "dashboard/app_base.html" %}
+
+{% block title %}Modifier mon profil{% endblock %}
+
+{% block topbar %}
+  <a class="lk-topbar-back" href="{% url 'dashboard:profile' %}">
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></svg>
+  </a>
+  <h1 class="lk-topbar-title">Modifier mon profil</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="lk-field">
+      <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+      {{ form.full_name }}
+      {% if form.full_name.errors %}<div class="field-errors">{{ form.full_name.errors|join:" " }}</div>{% endif %}
+    </div>
+    <div class="lk-field">
+      <label for="{{ form.phone_number.id_for_label }}">{{ form.phone_number.label }}</label>
+      {{ form.phone_number }}
+      {% if form.phone_number.errors %}<div class="field-errors">{{ form.phone_number.errors|join:" " }}</div>{% endif %}
+    </div>
+    <div class="lk-field">
+      <label for="{{ form.photo_user.id_for_label }}">{{ form.photo_user.label }}</label>
+      {{ form.photo_user }}
+      {% if form.photo_user.errors %}<div class="field-errors">{{ form.photo_user.errors|join:" " }}</div>{% endif %}
+    </div>
+    <label class="lk-checkbox">
+      {{ form.notification_enabled }} {{ form.notification_enabled.label }}
+    </label>
+
+    <button type="submit" class="btn btn-primary btn-block">Enregistrer</button>
+  </form>
+{% endblock %}

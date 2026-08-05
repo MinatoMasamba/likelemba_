@@ -6,6 +6,8 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from apps.dashboard.views import landing as landing_view
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Likelemba Sécurisé API",
@@ -18,6 +20,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('', landing_view, name='landing'),
     path('admin/', admin.site.urls),
     path('dashboard/', include('apps.dashboard.urls')),
     path('api/v1/users/', include('apps.users.urls')),

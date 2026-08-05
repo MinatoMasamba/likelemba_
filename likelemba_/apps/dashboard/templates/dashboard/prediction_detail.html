@@ -1,0 +1,125 @@
+{% extends "dashboard/app_base.html" %}
+{% load dashboard_extras %}
+
+{% block title %}{{ group.name }} — Prédiction{% endblock %}
+
+{% block topbar %}
+  <a class="lk-topbar-back" href="{% url 'dashboard:prediction_list' %}">
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></svg>
+  </a>
+  <h1 class="lk-topbar-title">{{ group.name }}</h1>
+{% endblock %}
+
+{% block content %}
+  <div style="font-size:30px;font-weight:700">{{ detail.current_value|fc }} FC · {{ detail.current_value|usd }}</div>
+  <div style="display:flex;align-items:center;gap:5px;margin-top:2px;font-size:12.5px;color:{% if detail.trend_up %}var(--reserve){% else %}var(--ink-soft){% endif %}">
+    <span>{% if detail.trend_up %}▲{% else %}▼{% endif %}</span>
+    <span>{% if detail.trend_up %}+{% endif %}{{ detail.trend_pct }}%</span>
+    <span style="opacity:.55;color:var(--ink)">vs jour précédent</span>
+  </div>
+
+  <div style="display:flex;background:var(--line);border-radius:999px;padding:3px;gap:2px;margin:14px 0">
+    {% for key, cfg in detail.checkpoints.items %}
+      <a href="?point={{ key }}" style="flex:1;text-align:center;padding:7px 0;border-radius:999px;font-size:11.5px;font-weight:700;text-decoration:none;{% if key == detail.checkpoint_key %}background:var(--reserve);color:var(--reserve-ink){% else %}color:var(--ink-soft){% endif %}">{{ cfg.label }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="lk-prediction-chart" style="height:170px">
+    <svg width="100%" height="100%" viewBox="0 0 {{ detail.chart.width }} {{ detail.chart.height }}" preserveAspectRatio="none" style="position:absolute;inset:0">
+      <polygon points="{{ detail.chart.band_points }}" fill="var(--reserve)" opacity="0.35"></polygon>
+      <polyline points="{{ detail.chart.historical_points }}" fill="none" stroke="var(--reserve)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      <polyline points="{{ detail.chart.forecast_points }}" fill="none" stroke="var(--reserve)" stroke-width="2.5" stroke-dasharray="5 4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      {% if detail.exit_summary %}
+        <polyline points="{{ detail.chart.exit_points }}" fill="none" stroke="var(--critical)" stroke-width="2.5" stroke-dasharray="2 3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      {% endif %}
+    </svg>
+  </div>
+  <div class="lk-chart-legend">
+    <span><i></i>Historique</span>
+    <span><i class="is-dashed"></i>Prévision</span>
+    <span><i class="is-soft"></i>Marge haute/basse</span>
+    {% if detail.exit_summary %}<span><i style="background:var(--critical)"></i>Avec départs simulés</span>{% endif %}
+  </div>
+
+  <div style="display:flex;gap:8px;margin:16px 0">
+    <a href="?point={{ detail.checkpoint_key }}{% if not show_edit_note %}&edit=1{% endif %}" class="btn btn-secondary" style="flex:1;font-size:12px;text-align:center">Modifier</a>
+    <a href="?point={{ detail.checkpoint_key }}&sim={{ detail.sim_pct }}&export=csv" class="btn btn-secondary" style="flex:1;font-size:12px;text-align:center">Exporter</a>
+    <a href="?point={{ detail.checkpoint_key }}{% if not show_simulate %}&simulate=1{% endif %}" class="btn btn-secondary" style="flex:1;font-size:12px;text-align:center">Simuler</a>
+  </div>
+
+  {% if show_edit_note %}
+    <div class="lk-banner lk-banner-warning">
+      Les valeurs réelles proviennent des cotisations et remboursements validés — elles ne sont pas modifiables manuellement.
+    </div>
+  {% endif %}
+
+  {% if show_simulate %}
+    <div class="lk-card">
+      <div class="lk-eyebrow" style="margin:0 0 6px">Cotisations futures</div>
+      <p style="margin:0 0 10px;font-size:12px;opacity:.65">Simulez une hausse ou une baisse des cotisations futures.</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        {% for pct in sim_presets %}
+          <a href="?point={{ detail.checkpoint_key }}&simulate=1&sim={{ pct }}{% if detail.exit_people %}&exit={{ detail.exit_people }}{% endif %}" class="chip{% if pct == detail.sim_pct %} chip-member{% endif %}" style="text-decoration:none">{% if pct > 0 %}+{% endif %}{{ pct }}%</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="lk-card">
+      <div class="lk-eyebrow" style="margin:0 0 6px">Départs anticipés</div>
+      <p style="margin:0 0 10px;font-size:12px;opacity:.65">Combien de membres quitteraient le groupe aujourd'hui ? Voyez si le fonds tient le coup dans le graphique.</p>
+      <form method="get" id="exit-form">
+        <input type="hidden" name="point" value="{{ detail.checkpoint_key }}">
+        <input type="hidden" name="sim" value="{{ detail.sim_pct }}">
+        <input type="hidden" name="simulate" value="1">
+      </form>
+      <div class="lk-stepper">
+        <a href="?point={{ detail.checkpoint_key }}&sim={{ detail.sim_pct }}&simulate=1&exit={{ detail.exit_prev }}" class="btn btn-icon btn-secondary" aria-label="Un membre de moins">−</a>
+        <input class="lk-stepper-input" type="number" name="exit" min="0" max="{{ group.number_of_members }}" value="{{ detail.exit_people }}" form="exit-form">
+        <a href="?point={{ detail.checkpoint_key }}&sim={{ detail.sim_pct }}&simulate=1&exit={{ detail.exit_next }}" class="btn btn-icon btn-secondary" aria-label="Un membre de plus">+</a>
+        <span class="lk-stepper-hint">sur {{ group.number_of_members }} membres</span>
+        <button type="submit" form="exit-form" class="btn btn-primary" style="margin:0">Simuler</button>
+      </div>
+      {% if detail.exit_summary %}
+        <div class="lk-banner {% if detail.exit_summary.is_solvent %}lk-banner-success{% else %}lk-banner-critical{% endif %}" style="margin:10px 0 0">
+          {% if detail.exit_summary.is_solvent %}
+            ✅ Fonds toujours positif si {{ detail.exit_summary.people }} membre(s) quitte(nt) le groupe aujourd'hui — minimum projeté : {{ detail.exit_summary.min_value|fc }} FC.
+          {% else %}
+            ⚠️ Fonds insuffisant si {{ detail.exit_summary.people }} membre(s) quitte(nt) le groupe aujourd'hui — minimum projeté : {{ detail.exit_summary.min_value|fc }} FC (déficit).
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div class="lk-card" style="flex-direction:row;display:flex;justify-content:space-between;margin:16px 0">
+    <div style="text-align:center;flex:1">
+      <div style="font-size:10.5px;opacity:.6">Probable</div>
+      <div style="font-weight:700;font-size:14px;margin-top:2px">{{ detail.probable|fc }} FC · {{ detail.probable|usd }}</div>
+    </div>
+    <div style="text-align:center;flex:1;border-left:1px solid var(--line);border-right:1px solid var(--line)">
+      <div style="font-size:10.5px;opacity:.6">Maximum</div>
+      <div style="font-weight:700;font-size:14px;margin-top:2px">{{ detail.maximum|fc }} FC · {{ detail.maximum|usd }}</div>
+    </div>
+    <div style="text-align:center;flex:1">
+      <div style="font-size:10.5px;opacity:.6">Minimum</div>
+      <div style="font-weight:700;font-size:14px;margin-top:2px">{{ detail.minimum|fc }} FC · {{ detail.minimum|usd }}</div>
+    </div>
+  </div>
+
+  <h3 class="lk-section-title">Réel (passé)</h3>
+  <div class="lk-card" style="padding:2px 16px">
+    {% for row in detail.actual_rows %}
+      <div class="lk-card-split" style="padding:9px 0{% if not forloop.last %};border-bottom:1px solid var(--line){% endif %}">
+        <span style="font-size:12.5px;opacity:.7">{{ row.label }}</span>
+        <span class="lk-card-value">{{ row.amount|fc }} FC · {{ row.amount|usd }}</span>
+      </div>
+    {% endfor %}
+  </div>
+
+  <h3 class="lk-section-title">Facteurs explicatifs</h3>
+  <div class="lk-card">
+    <p style="margin:0;font-size:13px">
+      {% if detail.has_debtors %}Ralentissement possible lié à des membres en retard.{% else %}Hausse prévue grâce aux cotisations régulières.{% endif %}
+    </p>
+  </div>
+{% endblock %}

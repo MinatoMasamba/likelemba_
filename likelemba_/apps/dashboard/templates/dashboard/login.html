@@ -1,50 +1,44 @@
 {% extends "dashboard/auth_base.html" %}
+
 {% block title %}Connexion{% endblock %}
+
 {% block auth_content %}
-
-<div class="auth-tabs">
-  <a href="?role=participant" class="auth-tab-pill {% if request.GET.role != 'admin' %}is-active{% endif %}" data-role-tab="participant">Membre</a>
-  <a href="?role=admin" class="auth-tab-pill {% if request.GET.role == 'admin' %}is-active{% endif %}" data-role-tab="admin">Administrateur</a>
-</div>
-
-<div class="auth-mode-tabs">
-  <span class="auth-mode-tab is-active">Se connecter</span>
-  <a href="{% url 'dashboard:signup' %}{% if request.GET.role %}?role={{ request.GET.role }}{% endif %}" class="auth-mode-tab">Créer un compte</a>
-</div>
-
-<h1 class="auth-title">Bienvenue</h1>
-<p class="auth-subtitle">
-  {% if request.GET.role == 'admin' %}Connectez-vous pour administrer vos tontines.{% else %}Connectez-vous pour gérer vos tontines.{% endif %}
-</p>
-
-<form method="post">
-  {% csrf_token %}
-
-  {% if form.non_field_errors %}
-    <ul class="messages">
-      {% for error in form.non_field_errors %}<li class="message message-error">{{ error }}</li>{% endfor %}
-    </ul>
-  {% endif %}
-
-  <div class="auth-field">
-    <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
-    {{ form.username }}
-    {% if form.username.errors %}<p class="field-errors">{{ form.username.errors|join:" " }}</p>{% endif %}
+  <div class="auth-tabs">
+    <a href="?role=participant" class="auth-tab-pill{% if request.GET.role != 'admin' %} is-active{% endif %}">Membre</a>
+    <a href="?role=admin" class="auth-tab-pill{% if request.GET.role == 'admin' %} is-active{% endif %}">Administrateur</a>
   </div>
 
-  <div class="auth-field">
-    <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
-    {{ form.password }}
-    {% if form.password.errors %}<p class="field-errors">{{ form.password.errors|join:" " }}</p>{% endif %}
+  <div class="auth-mode-tabs">
+    <span class="auth-mode-tab is-active">Se connecter</span>
+    <a class="auth-mode-tab" href="{% url 'dashboard:signup' %}{% if request.GET.role %}?role={{ request.GET.role }}{% endif %}">Créer un compte</a>
   </div>
 
-  <input type="hidden" name="next" value="{{ next }}">
-  <button type="submit" class="auth-submit">Continuer</button>
-</form>
+  <h1 class="auth-title">Bienvenue</h1>
+  <p class="auth-subtitle">Connectez-vous pour gérer vos tontines.</p>
 
-<div class="auth-links">
-  <a href="{% url 'dashboard:password_reset' %}">Mot de passe oublié ?</a>
-  <a href="{% url 'dashboard:signup' %}" class="primary">Créer un compte</a>
-</div>
+  <form method="post" action="{% url 'dashboard:login' %}">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="field-errors">{{ form.non_field_errors|join:" " }}</div>
+    {% endif %}
 
+    <div class="auth-field">
+      <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+      {{ form.username }}
+      {% if form.username.errors %}<div class="field-errors">{{ form.username.errors|join:" " }}</div>{% endif %}
+    </div>
+    <div class="auth-field">
+      <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+      {{ form.password }}
+      {% if form.password.errors %}<div class="field-errors">{{ form.password.errors|join:" " }}</div>{% endif %}
+    </div>
+
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="auth-submit">Continuer</button>
+  </form>
+
+  <div class="auth-links">
+    <a href="{% url 'dashboard:password_reset' %}">Mot de passe oublié ?</a>
+    <a class="primary" href="{% url 'dashboard:signup' %}{% if request.GET.role %}?role={{ request.GET.role }}{% endif %}">Créer un compte</a>
+  </div>
 {% endblock %}

@@ -17,7 +17,7 @@ class LoginPageTests(TestCase):
     def test_login_page_renders(self):
         response = self.client.get(reverse('dashboard:login'))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Numéro de téléphone")
+        self.assertContains(response, "Adresse email")
 
     def test_group_list_requires_login(self):
         response = self.client.get(reverse('dashboard:group_list'))

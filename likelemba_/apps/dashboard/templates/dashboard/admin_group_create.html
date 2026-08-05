@@ -1,0 +1,32 @@
+{% extends "dashboard/app_base.html" %}
+
+{% block title %}Créer une tontine{% endblock %}
+
+{% block topbar %}
+  <a class="lk-topbar-back" href="{% url 'dashboard:admin_groups' %}">
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></svg>
+  </a>
+  <h1 class="lk-topbar-title">Créer une tontine</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="lk-banner lk-banner-critical">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+    {% for field in form %}
+      <div class="lk-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="lk-field-hint">{{ field.help_text }}</div>{% endif %}
+        {% if field.errors %}<div class="field-errors">{{ field.errors|join:" " }}</div>{% endif %}
+      </div>
+    {% endfor %}
+
+    <p class="lk-field-hint" style="margin-bottom:16px">
+      Vous serez automatiquement l'administrateur de ce groupe, et un premier cycle démarrera dès sa création.
+    </p>
+
+    <button type="submit" class="btn btn-primary btn-block">Créer la tontine</button>
+  </form>
+{% endblock %}

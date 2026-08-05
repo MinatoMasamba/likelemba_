@@ -1,0 +1,100 @@
+{% extends "dashboard/app_base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block topbar %}
+  <a class="lk-topbar-back" href="{% url 'dashboard:admin_dashboard' %}">
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></svg>
+  </a>
+  <h1 class="lk-topbar-title">Notifications</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="lk-pills">
+    <a href="?tab=paiements" class="lk-pill{% if tab == 'paiements' %} is-active{% endif %}">Paiements</a>
+    <a href="?tab=predictions" class="lk-pill{% if tab == 'predictions' %} is-active{% endif %}">Alertes</a>
+    <a href="?tab=retards" class="lk-pill{% if tab == 'retards' %} is-active{% endif %}">Retards</a>
+    <a href="?tab=historique" class="lk-pill{% if tab == 'historique' %} is-active{% endif %}">Historique</a>
+  </div>
+
+  {% if tab == 'paiements' %}
+    <h3 class="lk-section-title" style="margin-top:0">Demandes d'adhésion</h3>
+    {% if pending_join_requests %}
+      {% for jr in pending_join_requests %}
+        <div class="lk-card">
+          <div class="lk-card-title">{{ jr.user.full_name }}</div>
+          <div class="lk-card-meta">{{ jr.group.name }}</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <form method="post" action="{% url 'dashboard:join_request_reject' pk=jr.id %}" style="flex:1">{% csrf_token %}<button type="submit" class="btn btn-secondary btn-block">Refuser</button></form>
+            <form method="post" action="{% url 'dashboard:join_request_accept' pk=jr.id %}" style="flex:1">{% csrf_token %}<button type="submit" class="btn btn-primary btn-block">Accepter</button></form>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}<p class="lk-empty">Aucune demande en attente.</p>{% endif %}
+
+    <h3 class="lk-section-title">Cotisations à valider</h3>
+    {% if pending_contributions %}
+      {% for c in pending_contributions %}
+        <div class="lk-card">
+          <div class="lk-card-split">
+            <div>
+              <div class="lk-card-title">{{ c.membership.user.full_name }}</div>
+              <div class="lk-card-meta">{{ c.membership.group.name }} · {{ c.created_at|date:"d/m/Y H:i" }}</div>
+            </div>
+            <span class="lk-card-value">{{ c.amount|floatformat:0 }} FC</span>
+          </div>
+          <form method="post" action="{% url 'dashboard:contribution_validate' group_id=c.membership.group.id contribution_id=c.id %}" style="margin-top:8px">
+            {% csrf_token %}<button type="submit" class="btn btn-primary btn-block">Valider</button>
+          </form>
+        </div>
+      {% endfor %}
+    {% else %}<p class="lk-empty">Aucune cotisation en attente.</p>{% endif %}
+
+  {% elif tab == 'predictions' %}
+    <h3 class="lk-section-title" style="margin-top:0">Groupes à surveiller</h3>
+    {% if risk_alerts %}
+      {% for alert in risk_alerts %}
+        <a class="lk-card" href="{% url 'dashboard:prediction_detail' group_id=alert.group.id %}">
+          <div class="lk-card-split">
+            <span class="lk-card-title">{{ alert.group.name }}</span>
+            <span class="chip chip-critical">{{ alert.score }}/100</span>
+          </div>
+        </a>
+      {% endfor %}
+    {% else %}<p class="lk-empty">Aucune alerte pour l'instant.</p>{% endif %}
+
+  {% elif tab == 'retards' %}
+    <h3 class="lk-section-title" style="margin-top:0">Membres en retard</h3>
+    {% if late_members %}
+      {% for m in late_members %}
+        <div class="lk-card-row" style="padding:8px 0;border-bottom:1px solid var(--line)">
+          <div class="lk-avatar lk-avatar-sm">{{ m.user.full_name|slice:":1"|upper }}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px">{{ m.user.full_name }}</div>
+            <div class="lk-card-meta">{{ m.group.name }}</div>
+          </div>
+          <span class="chip chip-critical">{{ m.debt_count }} dette{{ m.debt_count|pluralize }}</span>
+        </div>
+      {% endfor %}
+    {% else %}<p class="lk-empty">Aucun membre en retard.</p>{% endif %}
+
+  {% else %}
+    <h3 class="lk-section-title" style="margin-top:0">Historique des cotisations</h3>
+    {% if history_rows %}
+      {% for c in history_rows %}
+        <div class="lk-card-row" style="padding:8px 0;border-bottom:1px solid var(--line)">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px">{{ c.membership.user.full_name }}</div>
+            <div class="lk-card-meta">{{ c.membership.group.name }} · {{ c.created_at|date:"d/m/Y H:i" }}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="lk-card-value">{{ c.amount|floatformat:0 }} FC</div>
+            <span class="chip{% if c.status == 'validated' %} chip-done{% else %} chip-critical{% endif %}">
+              {% if c.status == 'validated' %}Validée{% else %}Rejetée{% endif %}
+            </span>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}<p class="lk-empty">Aucun historique pour l'instant.</p>{% endif %}
+  {% endif %}
+{% endblock %}

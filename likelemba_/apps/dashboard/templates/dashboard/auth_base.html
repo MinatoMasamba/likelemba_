@@ -1,35 +1,32 @@
 {% load static %}<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Connexion{% endblock %} — Likelemba Sécurisé</title>
-  <link rel="icon" href="{% static 'dashboard/img/favicon.png' %}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
-  <link rel="stylesheet" href="{% static 'dashboard/auth.css' %}">
-  <script>
-    (function () {
-      try {
-        var saved = localStorage.getItem('likelemba_theme');
-        if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
-      } catch (e) {}
-    })();
-  </script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Connexion{% endblock %} — Likelemba Sécurisé</title>
+<link rel="icon" href="{% static 'dashboard/img/favicon.png' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
+<link rel="stylesheet" href="{% static 'dashboard/auth.css' %}">
+<script>
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('likelemba_theme'); } catch (e) {}
+    if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
+  })();
+</script>
 </head>
 <body class="auth-body">
   <div class="auth-blob auth-blob-a"></div>
   <div class="auth-blob auth-blob-b"></div>
-
   <div class="auth-shell">
     <nav class="auth-nav">
       <a class="auth-brand" href="{% url 'dashboard:login' %}">Likelemba <span>Sécurisé</span></a>
       <button type="button" class="theme-toggle" id="themeToggle" aria-label="Changer de thème">
-        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path id="themeIconPath" d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23Z"/></svg>
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path id="themeIconPath" d=""/></svg>
       </button>
     </nav>
-
     <div class="auth-center">
       <div class="auth-card">
         {% if messages %}
@@ -41,7 +38,6 @@
       </div>
     </div>
   </div>
-
   <script src="{% static 'dashboard/theme.js' %}"></script>
   <script src="{% static 'dashboard/auth-tabs.js' %}"></script>
 </body>

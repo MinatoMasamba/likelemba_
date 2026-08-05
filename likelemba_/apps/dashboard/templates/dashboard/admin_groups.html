@@ -1,0 +1,51 @@
+{% extends "dashboard/app_base.html" %}
+
+{% block title %}Groupes{% endblock %}
+
+{% block content %}
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+    <div>
+      <h1 class="lk-page-title" style="margin:0">Mes groupes</h1>
+      <p class="lk-page-subtitle" style="margin:2px 0 0">Les tontines que vous administrez</p>
+    </div>
+    <a href="{% url 'dashboard:admin_group_create' %}" class="lk-topbar-icon" aria-label="Créer un groupe">
+      <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M228,128a8,8,0,0,1-8,8H136v84a8,8,0,0,1-16,0V136H36a8,8,0,0,1,0-16h84V36a8,8,0,0,1,16,0v84h84A8,8,0,0,1,228,128Z"/></svg>
+    </a>
+  </div>
+
+  {% if groups %}
+    {% for group in groups %}
+      <a class="lk-card" href="{% url 'dashboard:group_detail' group_id=group.id %}">
+        <div class="lk-card-row">
+          <div class="lk-avatar">{{ group.name|slice:":2"|upper }}</div>
+          <div style="flex:1;min-width:0">
+            <div class="lk-card-title">{{ group.name }}</div>
+            <div class="lk-card-meta">{{ group.number_of_members }} membres · Jour {{ group.elapsed_days }}/{{ group.cycle_duration_days }}</div>
+          </div>
+        </div>
+        <div class="lk-card-split" style="margin-top:6px">
+          <span class="lk-card-meta">Réserve</span>
+          <span class="lk-card-value">{{ group.reserve_amount|floatformat:0 }} FC</span>
+        </div>
+      </a>
+    {% endfor %}
+  {% else %}
+    <p class="lk-empty">Vous n'administrez encore aucun groupe. <a href="{% url 'dashboard:admin_group_create' %}">Créer une tontine</a>.</p>
+  {% endif %}
+
+  <h3 class="lk-section-title">Membres en retard</h3>
+  {% if late_members %}
+    {% for m in late_members %}
+      <div class="lk-card-row" style="padding:8px 0;border-bottom:1px solid var(--line)">
+        <div class="lk-avatar lk-avatar-sm">{{ m.user.full_name|slice:":1"|upper }}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px">{{ m.user.full_name }}</div>
+          <div class="lk-card-meta">{{ m.group.name }}</div>
+        </div>
+        <span class="chip">{{ m.debt_count }} dette{{ m.debt_count|pluralize }}</span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="lk-empty">Aucun membre en retard.</p>
+  {% endif %}
+{% endblock %}

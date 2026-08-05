@@ -1,0 +1,28 @@
+{% extends "dashboard/app_base.html" %}
+
+{% block title %}Cotiser{% endblock %}
+
+{% block topbar %}
+  <a class="lk-topbar-back" href="{% url 'dashboard:group_detail' group_id=group.id %}">
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></svg>
+  </a>
+  <h1 class="lk-topbar-title">Cotiser</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="lk-card">
+    <span class="lk-eyebrow" style="margin:0">{{ group.name }}</span>
+    <div class="lk-stat-value">{{ group.contribution_amount|floatformat:0 }} FC</div>
+    <div class="lk-card-meta">Dont {{ group.security_levy|floatformat:0 }} FC de prélèvement de sécurité (alimente la réserve)</div>
+  </div>
+
+  <p class="lk-field-hint" style="margin-bottom:16px">
+    Le montant de la cotisation est fixe, défini par l'administrateur du groupe. Une fois envoyée, elle reste
+    « en attente » jusqu'à validation par un administrateur.
+  </p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary btn-block">Envoyer ma cotisation ({{ group.contribution_amount|floatformat:0 }} FC)</button>
+  </form>
+{% endblock %}

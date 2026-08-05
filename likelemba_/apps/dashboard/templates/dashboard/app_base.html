@@ -1,0 +1,53 @@
+{% load static %}<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Likelemba Sécurisé{% endblock %}</title>
+<link rel="icon" href="{% static 'dashboard/img/favicon.png' %}">
+<link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
+<link rel="stylesheet" href="{% static 'dashboard/app.css' %}">
+<script>
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('likelemba_theme'); } catch (e) {}
+    document.documentElement.setAttribute('data-theme', (saved === 'light' || saved === 'dark') ? saved : 'dark');
+  })();
+</script>
+</head>
+<body class="lk-body">
+<div class="lk-shell">
+  <div class="lk-topbar">
+    {% block topbar %}
+      <a class="lk-topbar-brand" href="{% url 'dashboard:group_list' %}">Likelemba <span>Sécurisé</span></a>
+      <div style="flex:1"></div>
+      <button type="button" class="lk-topbar-icon" id="themeToggle" aria-label="Changer de thème">
+        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><path id="themeIconPath" d=""/></svg>
+      </button>
+    {% endblock %}
+  </div>
+
+  {% if messages %}
+    <div style="padding:6px 18px 0">
+      <ul class="messages">
+        {% for message in messages %}<li class="message message-{{ message.tags }}">{{ message }}</li>{% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <div class="lk-content {% block content_class %}has-tabbar{% endblock %}">
+    {% block content %}{% endblock %}
+  </div>
+
+  {% block bottom_nav %}
+    {% if has_admin_access %}
+      {% include 'dashboard/partials/_nav_admin.html' %}
+    {% else %}
+      {% include 'dashboard/partials/_nav_member.html' %}
+    {% endif %}
+  {% endblock %}
+</div>
+<script src="{% static 'dashboard/theme.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

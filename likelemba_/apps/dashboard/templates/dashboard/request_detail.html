@@ -1,0 +1,41 @@
+{% extends "dashboard/app_base.html" %}
+
+{% block title %}{{ group.name }} — File d'attente{% endblock %}
+
+{% block topbar %}
+  <a class="lk-topbar-back" href="{% url 'dashboard:requests_tab' %}">
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></svg>
+  </a>
+  <h1 class="lk-topbar-title">{{ group.name }}</h1>
+{% endblock %}
+
+{% block content %}
+  {% if my_position %}
+    <div class="lk-card">
+      <span class="lk-eyebrow" style="margin:0">Votre position</span>
+      <div class="lk-stat-value">#{{ my_position }}</div>
+      {% if is_eligible %}
+        <div class="lk-card-meta">C'est votre tour — votre cagnotte sera versée automatiquement dès validation de votre prochaine cotisation.</div>
+      {% else %}
+        <div class="lk-card-meta">{{ before_you|length }} membre{{ before_you|length|pluralize }} avant vous dans la file.</div>
+      {% endif %}
+    </div>
+
+    <h3 class="lk-section-title">Avant vous</h3>
+    {% if before_you %}
+      {% for pos in before_you %}
+        <div class="lk-card-row" style="padding:8px 0;border-bottom:1px solid var(--line)">
+          <div class="lk-avatar lk-avatar-sm">{{ pos.membership.user.full_name|slice:":1"|upper }}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px">{{ pos.membership.user.full_name }}</div>
+            <div class="lk-card-meta">#{{ pos.position }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="lk-empty">Personne devant vous — vous êtes en tête de file.</p>
+    {% endif %}
+  {% else %}
+    <p class="lk-empty">Aucun cycle actif pour ce groupe pour l'instant.</p>
+  {% endif %}
+{% endblock %}

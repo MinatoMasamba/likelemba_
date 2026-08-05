@@ -103,6 +103,48 @@ class ProjectionService:
         return results
 
 
+class RiskService:
+    """
+    Scores de risque dérivés des données réelles déjà enregistrées (dettes,
+    incidents passés). Ce ne sont pas des sorties d'un modèle d'apprentissage
+    automatique — le champ `UserProfile.risk_score` prévu pour ça n'est
+    alimenté par aucune logique dans ce projet — mais des heuristiques
+    simples et explicables, suffisantes pour signaler les cas à surveiller.
+    """
+
+    @staticmethod
+    def member_risk_score(membership) -> int:
+        """
+        Score de risque individuel (0 = fiable, 100 = très risqué), à partir
+        des dettes dans CE groupe et de l'historique global de l'utilisateur.
+        """
+        profile = getattr(membership.user, 'profile', None)
+        successful_cycles = profile.successful_cycles if profile else 0
+        default_count = profile.default_count if profile else 0
+        score = 15 + membership.debt_count * 18 + default_count * 15 - successful_cycles * 6
+        return max(5, min(95, round(score)))
+
+    @staticmethod
+    def group_risk_score(group) -> int:
+        """
+        Score de fiabilité du groupe (0 = à risque, 100 = sain), pénalisé par
+        le nombre de membres endettés et par le retard du bénéficiaire actuel
+        de la file par rapport à son tour théorique.
+        """
+        debt_count = group.members.filter(is_active=True, debt_count__gt=0).count()
+
+        overdue_days = 0
+        active_cycle = group.cycles.filter(is_active=True, is_completed=False).first()
+        if active_cycle:
+            current = active_cycle.queue.filter(is_current=True).first()
+            if current:
+                expected_day = current.position * group.distribution_interval_days
+                overdue_days = max(0, group.elapsed_days - expected_day)
+
+        score = 100 - debt_count * 22 - overdue_days * 8
+        return max(0, min(100, score))
+
+
 class GroupHistoryService:
     """
     Reconstitue l'évolution *observée* d'un groupe (argent et membres) à partir

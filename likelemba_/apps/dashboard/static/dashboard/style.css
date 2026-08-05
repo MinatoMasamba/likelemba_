@@ -1,22 +1,35 @@
+/* Palette reprise du prototype de design (Likelemba Sécurisé Mobile
+   Prototype.zip) pour rester visuellement cohérent avec la landing page
+   et les pages d'authentification, qui utilisent déjà ces tokens. */
 :root {
-  --paper: #F3F5F3;
+  --paper: #FAF7EF;
   --paper-raised: #FFFFFF;
-  --ink: #16262A;
-  --ink-soft: #55686A;
-  --line: #D7DFDC;
-  --reserve: #2E7D68;
-  --reserve-soft: #E4F1EC;
-  --vision: #A8791F;
+  --ink: #12201A;
+  --ink-soft: #57655D;
+  --line: #E7E0CF;
+  --reserve: #0E5C46;
+  --reserve-ink: #FFFFFF;
+  --reserve-soft: #EAF6F0;
+  --vision: #B9790A;
   --vision-soft: #F6EEDA;
   --critical: #AB4331;
   --critical-soft: #F8E6E1;
+  --shadow: 0 20px 50px rgba(16, 32, 26, 0.14);
+  /* Fond/texte des avatars et badges "accent" (initiales de groupe, tag
+     "Votre tour") — repris tels quels du prototype (accent-800/accent-100),
+     volontairement distincts de --reserve-soft qui sert de fond estompé
+     ailleurs (bannières...). */
+  --reserve-deep: #0E5C46;
+  --reserve-deep-ink: #EAF6F0;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #0F1A1B; --paper-raised: #16262A; --ink: #E7EEEC; --ink-soft: #9FB0AE;
-    --line: #28393A; --reserve: #56C79E; --reserve-soft: #16302A;
-    --vision: #D9A83F; --vision-soft: #33290F; --critical: #E38267; --critical-soft: #33201A;
+    --paper: #0B1310; --paper-raised: #122019; --ink: #F3F1EA; --ink-soft: #B7C2BB;
+    --line: #1E332B; --reserve: #34D399; --reserve-ink: #06120D; --reserve-soft: #16302A;
+    --vision: #F2B807; --vision-soft: #33290F; --critical: #E38267; --critical-soft: #33201A;
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    --reserve-deep: #0E5C46; --reserve-deep-ink: #EAFBF3;
   }
 }
 
@@ -24,14 +37,18 @@
    localStorage sous "likelemba_theme" — prioritaire sur la préférence système
    et appliqué à tout le tableau de bord, pas seulement aux pages d'auth. */
 :root[data-theme="dark"] {
-  --paper: #0F1A1B; --paper-raised: #16262A; --ink: #E7EEEC; --ink-soft: #9FB0AE;
-  --line: #28393A; --reserve: #56C79E; --reserve-soft: #16302A;
-  --vision: #D9A83F; --vision-soft: #33290F; --critical: #E38267; --critical-soft: #33201A;
+  --paper: #0B1310; --paper-raised: #122019; --ink: #F3F1EA; --ink-soft: #B7C2BB;
+  --line: #1E332B; --reserve: #34D399; --reserve-ink: #06120D; --reserve-soft: #16302A;
+  --vision: #F2B807; --vision-soft: #33290F; --critical: #E38267; --critical-soft: #33201A;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  --reserve-deep: #0E5C46; --reserve-deep-ink: #EAFBF3;
 }
 :root[data-theme="light"] {
-  --paper: #F3F5F3; --paper-raised: #FFFFFF; --ink: #16262A; --ink-soft: #55686A;
-  --line: #D7DFDC; --reserve: #2E7D68; --reserve-soft: #E4F1EC;
-  --vision: #A8791F; --vision-soft: #F6EEDA; --critical: #AB4331; --critical-soft: #F8E6E1;
+  --paper: #FAF7EF; --paper-raised: #FFFFFF; --ink: #12201A; --ink-soft: #57655D;
+  --line: #E7E0CF; --reserve: #0E5C46; --reserve-ink: #FFFFFF; --reserve-soft: #EAF6F0;
+  --vision: #B9790A; --vision-soft: #F6EEDA; --critical: #AB4331; --critical-soft: #F8E6E1;
+  --shadow: 0 20px 50px rgba(16, 32, 26, 0.14);
+  --reserve-deep: #0E5C46; --reserve-deep-ink: #EAF6F0;
 }
 
 * { box-sizing: border-box; }
@@ -40,7 +57,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-size: 15px;
   line-height: 1.55;
 }
@@ -48,7 +65,8 @@ body {
 a { color: var(--reserve); }
 
 h1, h2, h3 {
-  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  font-family: 'Bricolage Grotesque', Georgia, serif;
+  font-weight: 700;
   letter-spacing: -0.01em;
   margin: 0 0 12px;
 }
@@ -69,15 +87,21 @@ code {
 
 /* Topbar */
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 14px 28px;
   border-bottom: 1px solid var(--line);
-  background: var(--paper-raised);
+  background: color-mix(in srgb, var(--paper-raised) 85%, transparent);
+  backdrop-filter: blur(10px);
 }
 .brand {
+  font-family: 'Bricolage Grotesque', Georgia, serif;
   font-weight: 700;
+  font-size: 17px;
   text-decoration: none;
   color: var(--ink);
 }
@@ -123,9 +147,14 @@ code {
 .card {
   background: var(--paper-raised);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 20px;
   padding: 22px 24px;
   margin-bottom: 22px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+a.card:hover, a.card:focus-visible {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 /* Auth */
@@ -144,15 +173,17 @@ code {
 /* Buttons */
 .btn {
   display: inline-block;
-  padding: 9px 16px;
-  border-radius: 8px;
+  padding: 11px 22px;
+  border-radius: 999px;
   border: none;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   text-decoration: none;
+  transition: transform .2s ease, box-shadow .2s ease;
 }
-.btn-primary { background: var(--reserve); color: white; margin-top: 8px; }
+.btn-primary { background: var(--reserve); color: var(--reserve-ink); margin-top: 8px; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
 .btn-secondary { background: var(--vision-soft); color: var(--vision); }
 
 .link-button {
@@ -270,7 +301,7 @@ table.table th {
 .inline-form input {
   padding: 8px 10px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--paper);
   color: var(--ink);
 }

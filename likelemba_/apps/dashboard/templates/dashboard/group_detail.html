@@ -1,195 +1,204 @@
-{% extends "dashboard/base.html" %}
+{% extends "dashboard/app_base.html" %}
+{% load dashboard_extras %}
+
 {% block title %}{{ group.name }}{% endblock %}
+
+{% block topbar %}
+  <a class="lk-topbar-back" href="{% if is_admin %}{% url 'dashboard:admin_groups' %}{% else %}{% url 'dashboard:group_list' %}{% endif %}">
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></svg>
+  </a>
+  <div class="lk-avatar lk-avatar-sm">{{ group.name|slice:":2"|upper }}</div>
+  <h1 class="lk-topbar-title">{{ group.name }}</h1>
+{% endblock %}
+
+{% block content_class %}{% if not is_admin %}has-sticky{% else %}has-tabbar{% endif %}{% endblock %}
+
 {% block content %}
 
-<div class="page-head">
-  <div>
-    <a class="back-link" href="{% url 'dashboard:group_list' %}">&larr; Mes groupes</a>
-    <h1>{{ group.name }}</h1>
+{% if not is_admin %}
+  {# ---------------------------------------------------------------- #}
+  {# Vue membre                                                        #}
+  {# ---------------------------------------------------------------- #}
+  <div class="lk-card">
+    <div class="lk-card-split">
+      <span class="lk-eyebrow" style="margin:0;display:flex;align-items:center;gap:6px">
+        <svg width="12" height="12" viewBox="0 0 256 256" fill="currentColor"><path d="M208,40H48A16,16,0,0,0,32,56v58.78c0,89.61,75.82,119.34,91,124.39a13.53,13.53,0,0,0,10,0c15.2-5.05,91-34.78,91-124.39V56A16,16,0,0,0,208,40Zm0,74.79c0,78.42-66.35,104.62-80,109.18-13.53-4.52-80-30.69-80-109.18V56H208ZM82.34,133.66a8,8,0,0,1,11.32-11.32L112,140.69l50.34-50.35a8,8,0,1,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z"/></svg>
+        Fonds de réserve
+      </span>
+      {% if active_cycle %}<span class="chip chip-outline"><span class="chip-live-dot"></span>En direct</span>{% endif %}
+    </div>
+    <div class="lk-stat-value">{{ group.reserve_amount|fc }} FC · {{ group.reserve_amount|usd }}</div>
+    <div class="lk-card-meta">Cagnotte nette : {{ net_jackpot|fc }} FC · {{ net_jackpot|usd }}</div>
   </div>
-  <span class="chip chip-{{ membership.role }}">{{ membership.get_role_display }}</span>
-</div>
 
-<p class="muted">
-  Code d'invitation : <code>{{ group.invite_code }}</code>
-  · Cycle : jour {{ group.elapsed_days }} / {{ group.cycle_duration_days }}
-  · {{ group.number_of_members }} membre{{ group.number_of_members|pluralize }}
-</p>
-
-<section class="card">
-  <h2>Évolution totale de l'argent</h2>
-  <dl class="stat-row big">
-    <div><dt>Fonds de réserve actuel</dt><dd>{{ money.reserve_amount }} FC</dd></div>
-    <div><dt>Total cotisé (validé)</dt><dd>{{ money.total_contributed }} FC</dd></div>
-    <div><dt>Total versé en cagnottes</dt><dd>{{ money.total_paid_out }} FC</dd></div>
-    <div><dt>Total remboursé (départs)</dt><dd>{{ money.total_refunded }} FC</dd></div>
-  </dl>
-
-  <h3>Trajectoire observée du fonds de réserve</h3>
-  {% if chart_points.points %}
-    <svg viewBox="0 0 {{ chart_points.width }} {{ chart_points.height }}" class="reserve-chart" role="img"
-         aria-label="Évolution du fonds de réserve">
-      <polyline points="{{ chart_points.points }}" class="reserve-chart-line" fill="none" />
-    </svg>
-    <p class="muted small">Repère du graphique : {{ chart_points.min_value|floatformat:0 }} FC — {{ chart_points.max_value|floatformat:0 }} FC.</p>
-  {% endif %}
-
-  {% if projection_final %}
-    <p class="muted small">
-      Projection théorique (EDO) à ce stade du cycle :
-      {{ projection_final|floatformat:2 }} FC attendus vs {{ money.reserve_amount }} FC observés.
-    </p>
-  {% endif %}
-
-  {% if reserve_timeline %}
-    <table class="table small">
-      <thead><tr><th>Date</th><th>Fonds cumulé</th></tr></thead>
-      <tbody>
-        {% for point in reserve_timeline %}
-        <tr><td>{{ point.date|date:"d/m/Y H:i" }}</td><td>{{ point.amount }} FC</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p class="muted small">Aucun mouvement enregistré pour l'instant.</p>
-  {% endif %}
-</section>
-
-<section class="card">
-  <h2>Évolution des membres</h2>
-  {% if member_timeline %}
-    <ul class="timeline">
-      {% for event in member_timeline %}
-        <li class="timeline-item timeline-{{ event.type }}">
-          <span class="timeline-date">{{ event.date|date:"d/m/Y" }}</span>
-          {% if event.type == 'arrivee' %}
-            <strong>{{ event.membership.user.full_name }}</strong> a rejoint le groupe
-          {% else %}
-            <strong>{{ event.membership.user.full_name }}</strong> a quitté le groupe
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="muted small">Aucun mouvement de membre enregistré pour l'instant.</p>
-  {% endif %}
-</section>
-
-<section class="card">
-  <h2>Membres</h2>
-  <div class="member-columns">
-    <div>
-      <h3>Contributeurs à jour ({{ contributors|length }})</h3>
-      {% for m in contributors %}
-        <div class="member-row">{{ m.user.full_name }} <span class="muted small">{{ m.total_contributed }} FC cotisés</span></div>
-      {% empty %}<p class="muted small">Aucun.</p>{% endfor %}
-    </div>
-    <div>
-      <h3>Engagements futurs ({{ future_commitments|length }})</h3>
-      {% for m in future_commitments %}
-        <div class="member-row">{{ m.user.full_name }} <span class="muted small">n'a pas encore reçu sa cagnotte</span></div>
-      {% empty %}<p class="muted small">Aucun.</p>{% endfor %}
-    </div>
-    <div>
-      <h3>Sortants ({{ exited|length }})</h3>
-      {% for m in exited %}
-        <div class="member-row">{{ m.user.full_name }} <span class="muted small">parti le {{ m.left_at|date:"d/m/Y" }}</span></div>
-      {% empty %}<p class="muted small">Aucun.</p>{% endfor %}
-    </div>
-    <div>
-      <h3>Nouveaux ajouts ({{ new_additions|length }})</h3>
-      {% for m in new_additions %}
-        <div class="member-row">{{ m.user.full_name }} <span class="muted small">arrivé le {{ m.joined_at|date:"d/m/Y" }}</span></div>
-      {% empty %}<p class="muted small">Aucun.</p>{% endfor %}
-    </div>
+  <div class="lk-card">
+    <span class="lk-eyebrow" style="margin:0">Jour {{ group.elapsed_days }} sur {{ group.cycle_duration_days }}</span>
+    <div class="lk-progress"><div class="lk-progress-bar" style="width:{{ progress_percent }}%"></div></div>
+    <div class="lk-card-meta">{{ group.number_of_members }} membre{{ group.number_of_members|pluralize }} · Code {{ group.invite_code }}</div>
   </div>
-</section>
 
-{% if is_admin %}
-<section class="card">
-  <h2>Administration</h2>
+  {% if membership.debt_count %}
+    <div class="lk-banner lk-banner-warning">
+      <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216ZM120,144V80a8,8,0,0,1,16,0v64a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z"/></svg>
+      <span>{{ membership.debt_count }} cotisation{{ membership.debt_count|pluralize }} manquée{{ membership.debt_count|pluralize }}</span>
+    </div>
+  {% endif %}
 
-  <h3>File d'attente du cycle en cours</h3>
+  {% if is_eligible %}
+    <div class="lk-banner lk-banner-success">
+      <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Z"/></svg>
+      <span>C'est votre tour ! Demandez votre cagnotte ci-dessous, ou attendez la validation automatique de votre prochaine cotisation.</span>
+    </div>
+  {% endif %}
+
+  <h3 class="lk-section-title">File d'attente</h3>
   {% if queue %}
-    <table class="table">
-      <thead><tr><th>Position</th><th>Membre</th><th>Statut</th><th></th></tr></thead>
-      <tbody>
-        {% for pos in queue %}
-        <tr>
-          <td>{{ pos.position }}</td>
-          <td>{{ pos.membership.user.full_name }}</td>
-          <td>{% if pos.is_current %}<span class="chip chip-current">Tour actuel</span>{% elif pos.received_at %}<span class="chip chip-done">Reçu</span>{% else %}<span class="chip">En attente</span>{% endif %}</td>
-          <td>
-            <form method="post" action="{% url 'dashboard:member_exit' group_id=group.id membership_id=pos.membership.id %}"
-                  onsubmit="return confirm('Confirmer le départ de {{ pos.membership.user.full_name }} ?');">
-              {% csrf_token %}
-              <button type="submit" class="link-button danger">Retirer</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    {% for pos in queue %}
+      <div class="lk-card-row" style="padding:8px 0;border-bottom:1px solid var(--line)">
+        <div class="lk-avatar lk-avatar-sm">{{ pos.membership.user.full_name|slice:":1"|upper }}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px">{% if membership and pos.membership_id == membership.id %}Vous{% else %}{{ pos.membership.user.full_name }}{% endif %}</div>
+          <div class="lk-card-meta">#{{ pos.position }}</div>
+        </div>
+        {% if pos.is_current %}<span class="chip chip-accent">Bénéficiaire actuel</span>{% endif %}
+        {% if pos.received_at %}
+          <svg class="lk-received-icon" width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Z"/></svg>
+        {% endif %}
+      </div>
+    {% endfor %}
   {% else %}
-    <p class="muted small">Aucun cycle actif ou file vide.</p>
+    <p class="lk-empty">Aucun cycle actif pour l'instant.</p>
   {% endif %}
 
-  <h3>Ajouter un remplaçant</h3>
-  <form method="post" action="{% url 'dashboard:member_replace' group_id=group.id %}" class="inline-form">
-    {% csrf_token %}
-    {{ replace_form.phone_number.label_tag }} {{ replace_form.phone_number }}
-    {{ replace_form.position.label_tag }} {{ replace_form.position }}
-    <button type="submit" class="btn btn-secondary">Ajouter</button>
-  </form>
+  <div class="lk-sticky-actions">
+    <a href="{% url 'dashboard:contribute' group_id=group.id %}" class="btn btn-outline">Cotiser</a>
+    <form method="post" action="{% url 'dashboard:request_payout' group_id=group.id %}" style="flex:1">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary btn-block"{% if not is_eligible %} disabled{% endif %}>Demander l'argent</button>
+    </form>
+  </div>
 
-  <h3>Demandes d'adhésion en attente ({{ pending_join_requests|length }})</h3>
+{% else %}
+  {# ---------------------------------------------------------------- #}
+  {# Vue administrateur                                                #}
+  {# ---------------------------------------------------------------- #}
+  <div class="lk-stat-row">
+    <div class="lk-stat">
+      <div class="lk-stat-value" style="font-size:19px">{{ money.reserve_amount|floatformat:0 }} FC</div>
+      <div class="lk-stat-label">Réserve</div>
+    </div>
+    <div class="lk-stat">
+      <div class="lk-stat-value" style="font-size:19px">{{ money.total_contributed|floatformat:0 }} FC</div>
+      <div class="lk-stat-label">Cotisé au total</div>
+    </div>
+  </div>
+  <div class="lk-stat-row">
+    <div class="lk-stat">
+      <div class="lk-stat-value" style="font-size:19px">{{ money.total_paid_out|floatformat:0 }} FC</div>
+      <div class="lk-stat-label">Cagnottes versées</div>
+    </div>
+    <div class="lk-stat">
+      <div class="lk-stat-value" style="font-size:19px">{{ money.total_refunded|floatformat:0 }} FC</div>
+      <div class="lk-stat-label">Remboursé</div>
+    </div>
+  </div>
+
+  {% if chart_points %}
+    <div class="lk-chart-wrap">
+      <svg width="100%" height="100%" viewBox="0 0 {{ chart_points.width }} {{ chart_points.height }}" preserveAspectRatio="none" style="position:absolute;inset:0">
+        <polyline points="{{ chart_points.points }}" fill="none" stroke="var(--reserve)" stroke-width="2"/>
+      </svg>
+    </div>
+    {% if projection_final %}
+      <p class="lk-card-meta" style="margin-bottom:16px">Projection théorique : {{ projection_final|floatformat:0 }} FC vs {{ money.reserve_amount|floatformat:0 }} FC observés</p>
+    {% endif %}
+  {% endif %}
+
+  <h2 style="font-size:16px;margin:0 0 10px">Administration</h2>
+
+  <h3 class="lk-section-title" style="margin-top:0">Demandes d'adhésion en attente</h3>
   {% if pending_join_requests %}
-    <table class="table">
-      <thead><tr><th>Candidat</th><th>Message</th><th></th></tr></thead>
-      <tbody>
-        {% for jr in pending_join_requests %}
-        <tr>
-          <td>{{ jr.user.full_name }} <span class="muted small">{{ jr.user.phone_number }}</span></td>
-          <td class="muted small">{{ jr.message|default:"—" }}</td>
-          <td class="actions">
-            <form method="post" action="{% url 'dashboard:join_request_accept' pk=jr.id %}">
-              {% csrf_token %}<button type="submit" class="link-button">Accepter</button>
-            </form>
-            <form method="post" action="{% url 'dashboard:join_request_reject' pk=jr.id %}">
-              {% csrf_token %}<button type="submit" class="link-button danger">Refuser</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    {% for jr in pending_join_requests %}
+      <div class="lk-card">
+        <div class="lk-card-split">
+          <div>
+            <div class="lk-card-title">{{ jr.user.full_name }}</div>
+            <div class="lk-card-meta">{{ jr.user.phone_number }} · {{ jr.message|default:"—" }}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <form method="post" action="{% url 'dashboard:join_request_reject' pk=jr.id %}" style="flex:1">
+            {% csrf_token %}<button type="submit" class="btn btn-secondary btn-block">Refuser</button>
+          </form>
+          <form method="post" action="{% url 'dashboard:join_request_accept' pk=jr.id %}" style="flex:1">
+            {% csrf_token %}<button type="submit" class="btn btn-primary btn-block">Accepter</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
   {% else %}
-    <p class="muted small">Aucune demande en attente.</p>
+    <p class="lk-empty">Aucune demande en attente.</p>
   {% endif %}
 
-  <h3>Cotisations à valider ({{ pending_contributions|length }})</h3>
+  <h3 class="lk-section-title">Cotisations à valider</h3>
   {% if pending_contributions %}
-    <table class="table">
-      <thead><tr><th>Membre</th><th>Montant</th><th>Date</th><th></th></tr></thead>
-      <tbody>
-        {% for c in pending_contributions %}
-        <tr>
-          <td>{{ c.membership.user.full_name }}</td>
-          <td>{{ c.amount }} FC</td>
-          <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
-          <td>
-            <form method="post" action="{% url 'dashboard:contribution_validate' group_id=group.id contribution_id=c.id %}">
-              {% csrf_token %}<button type="submit" class="link-button">Valider</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    {% for c in pending_contributions %}
+      <div class="lk-card">
+        <div class="lk-card-split">
+          <div>
+            <div class="lk-card-title">{{ c.membership.user.full_name }}</div>
+            <div class="lk-card-meta">{{ c.created_at|date:"d/m/Y H:i" }}</div>
+          </div>
+          <span class="lk-card-value">{{ c.amount|floatformat:0 }} FC</span>
+        </div>
+        <form method="post" action="{% url 'dashboard:contribution_validate' group_id=group.id contribution_id=c.id %}" style="margin-top:8px">
+          {% csrf_token %}<button type="submit" class="btn btn-primary btn-block">Valider</button>
+        </form>
+      </div>
+    {% endfor %}
   {% else %}
-    <p class="muted small">Aucune cotisation en attente.</p>
+    <p class="lk-empty">Aucune cotisation en attente.</p>
   {% endif %}
-</section>
-{% endif %}
 
+  <h3 class="lk-section-title">Membres</h3>
+  {% for m in contributors %}
+    <div class="lk-card-row" style="padding:8px 0;border-bottom:1px solid var(--line)">
+      <div class="lk-avatar lk-avatar-sm">{{ m.user.full_name|slice:":1"|upper }}</div>
+      <div style="flex:1;min-width:0">
+        <a href="{% url 'dashboard:admin_member_detail' group_id=group.id membership_id=m.id %}" style="text-decoration:none;color:inherit;font-size:13px">{{ m.user.full_name }}</a>
+        <div class="lk-card-meta">Cotisé : {{ m.total_contributed|floatformat:0 }} FC</div>
+      </div>
+      {% if m.debt_count %}<span class="chip">{{ m.debt_count }} dette{{ m.debt_count|pluralize }}</span>{% else %}<span class="chip chip-member">À jour</span>{% endif %}
+    </div>
+  {% empty %}
+    <p class="lk-empty">Aucun membre actif.</p>
+  {% endfor %}
+
+  <h3 class="lk-section-title">Ajouter un membre</h3>
+  <div class="lk-card">
+    <form method="post" action="{% url 'dashboard:member_replace' group_id=group.id %}">
+      {% csrf_token %}
+      <div class="lk-field">
+        <label for="{{ replace_form.phone_number.id_for_label }}">{{ replace_form.phone_number.label }}</label>
+        {{ replace_form.phone_number }}
+      </div>
+      <div class="lk-field">
+        <label for="{{ replace_form.position.id_for_label }}">{{ replace_form.position.label }}</label>
+        {{ replace_form.position }}
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Ajouter au groupe</button>
+    </form>
+  </div>
+
+  {% if exited %}
+    <h3 class="lk-section-title">Membres sortis</h3>
+    {% for m in exited %}
+      <div class="lk-card-row" style="padding:6px 0">
+        <span style="font-size:13px">{{ m.user.full_name }}</span>
+        <span class="lk-card-meta">{{ m.left_at|date:"d/m/Y" }}</span>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+{% endif %}
 {% endblock %}

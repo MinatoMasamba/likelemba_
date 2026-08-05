@@ -1,0 +1,84 @@
+{% extends "dashboard/app_base.html" %}
+
+{% block title %}{{ target.user.full_name }}{% endblock %}
+
+{% block topbar %}
+  <a class="lk-topbar-back" href="{% url 'dashboard:group_detail' group_id=group.id %}">
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></svg>
+  </a>
+  <h1 class="lk-topbar-title">{{ target.user.full_name }}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="lk-card-row" style="margin-bottom:16px">
+    <div class="lk-avatar lk-avatar-lg">{{ target.user.full_name|slice:":1"|upper }}</div>
+    <div>
+      <div class="lk-card-title" style="font-size:16px">{{ target.user.full_name }}</div>
+      <div class="lk-card-meta">{{ group.name }}</div>
+    </div>
+  </div>
+
+  <div class="lk-card" style="padding:2px 16px">
+    <div class="lk-card-split" style="padding:11px 0;border-bottom:1px solid var(--line)">
+      <span>Téléphone</span><span class="lk-card-value">{{ target.user.phone_number }}</span>
+    </div>
+    <div class="lk-card-split" style="padding:11px 0;border-bottom:1px solid var(--line)">
+      <span>Cotisé</span><span class="lk-card-value">{{ target.total_contributed|floatformat:0 }} FC</span>
+    </div>
+    <div class="lk-card-split" style="padding:11px 0;border-bottom:1px solid var(--line)">
+      <span>Dettes</span><span class="chip{% if target.debt_count %} chip-critical{% else %} chip-member{% endif %}">{{ target.debt_count }}</span>
+    </div>
+    <div class="lk-card-split" style="padding:11px 0">
+      <span>A reçu sa cagnotte</span><span class="chip{% if target.has_received_payout %} chip-done{% endif %}">{% if target.has_received_payout %}Oui{% else %}Pas encore{% endif %}</span>
+    </div>
+  </div>
+
+  <div class="lk-card">
+    <div class="lk-card-split">
+      <span class="lk-eyebrow" style="margin:0">Score de risque</span>
+      <span class="chip{% if risk_score < 35 %} chip-member{% elif risk_score < 65 %}{% else %} chip-critical{% endif %}">
+        {% if risk_score < 35 %}Faible{% elif risk_score < 65 %}Modéré{% else %}Élevé{% endif %}
+      </span>
+    </div>
+    <div class="lk-progress"><div class="lk-progress-bar" style="width:{{ risk_score }}%"></div></div>
+    <div class="lk-card-meta">{{ risk_score }}/100 — basé sur les dettes dans ce groupe et l'historique global du membre.</div>
+  </div>
+
+  <h3 class="lk-section-title">Remplacer par un nouveau membre</h3>
+  <div class="lk-card">
+    <form method="post" action="{% url 'dashboard:member_replace' group_id=group.id %}">
+      {% csrf_token %}
+      <div class="lk-field">
+        <label for="{{ replace_form.phone_number.id_for_label }}">{{ replace_form.phone_number.label }}</label>
+        {{ replace_form.phone_number }}
+      </div>
+      <div class="lk-field">
+        <label for="{{ replace_form.position.id_for_label }}">{{ replace_form.position.label }}</label>
+        {{ replace_form.position }}
+        <div class="lk-field-hint">Laissez vide pour ajouter en fin de file, ou indiquez la position de {{ target.user.full_name }} pour la reprendre.</div>
+      </div>
+      <button type="submit" class="btn btn-secondary btn-block">Ajouter le remplaçant</button>
+    </form>
+  </div>
+
+  {% if other_groups %}
+    <h3 class="lk-section-title">Déplacer vers un autre groupe</h3>
+    <div class="lk-card">
+      <form method="post" action="{% url 'dashboard:member_move' group_id=group.id membership_id=target.id %}">
+        {% csrf_token %}
+        <div class="lk-field">
+          <label for="{{ move_form.target_group.id_for_label }}">{{ move_form.target_group.label }}</label>
+          {{ move_form.target_group }}
+        </div>
+        <button type="submit" class="btn btn-secondary btn-block">Déplacer {{ target.user.full_name }}</button>
+      </form>
+    </div>
+  {% endif %}
+
+  <h3 class="lk-section-title">Retirer du groupe</h3>
+  <form method="post" action="{% url 'dashboard:member_exit' group_id=group.id membership_id=target.id %}"
+        onsubmit="return confirm('Confirmer le départ de {{ target.user.full_name|escapejs }} ?');">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger btn-block">Retirer {{ target.user.full_name }}</button>
+  </form>
+{% endblock %}

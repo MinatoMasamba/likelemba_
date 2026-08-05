@@ -14,18 +14,6 @@ ALLOWED_HOSTS = config(
     cast=lambda v: [s.strip() for s in v.split(',') if s.strip()]
 )
 
-# Base de données PostgreSQL en production (SQLite ne convient pas au multi-processus).
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
-    }
-}
-
 # Durcissement HTTP/cookies.
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
 SESSION_COOKIE_SECURE = True

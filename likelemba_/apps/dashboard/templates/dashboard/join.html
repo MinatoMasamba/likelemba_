@@ -1,0 +1,26 @@
+{% extends "dashboard/app_base.html" %}
+
+{% block title %}Rejoindre un groupe{% endblock %}
+
+{% block topbar %}
+  <a class="lk-topbar-back" href="{% url 'dashboard:group_list' %}">
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></svg>
+  </a>
+  <h1 class="lk-topbar-title">Rejoindre un groupe</h1>
+{% endblock %}
+
+{% block content %}
+  <p class="lk-page-subtitle">Entrez le code d'invitation transmis par un administrateur.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="lk-field">
+      <label for="{{ form.invite_code.id_for_label }}">{{ form.invite_code.label }}</label>
+      {{ form.invite_code }}
+      {% if form.invite_code.errors %}<div class="field-errors">{{ form.invite_code.errors|join:" " }}</div>{% endif %}
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">Envoyer la demande</button>
+  </form>
+
+  <p class="lk-field-hint">Votre demande devra être acceptée par un administrateur du groupe avant que vous n'en deveniez membre.</p>
+{% endblock %}

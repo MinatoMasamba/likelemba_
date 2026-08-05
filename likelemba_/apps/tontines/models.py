@@ -151,7 +151,8 @@ class LikelembaGroup(BaseModel):
 
     def calculate_net_jackpot(self):
         """Cagnotte nette après prélèvement (Flutter: netJackpot)."""
-        return self.calculate_gross_jackpot() * (1 - self.security_fee_rate)
+        rate = Decimal(str(self.security_fee_rate))
+        return self.calculate_gross_jackpot() * (Decimal('1') - rate)
 
     # --------------------------------------------------------------------------
     # Méthodes utilitaires

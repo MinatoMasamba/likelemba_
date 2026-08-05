@@ -15,5 +15,5 @@ staticfiles/
 
 # Environnements virtuels
 .venv/
-venv/
+mon_env/
 env/

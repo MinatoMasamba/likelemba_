@@ -1,0 +1,87 @@
+{% extends "dashboard/app_base.html" %}
+{% load dashboard_extras %}
+
+{% block title %}Groupes{% endblock %}
+
+{% block content %}
+  <p class="lk-eyebrow">Revenu total</p>
+  <div class="lk-stat-value" style="font-size:27px;margin-bottom:14px">{{ total_received|fc }} FC · {{ total_received|usd }}</div>
+
+  {% if groups_view %}
+    <div class="lk-carousel" data-lk-carousel="true">
+      {% for row in groups_view %}
+        <a class="lk-carousel-card" href="{% url 'dashboard:group_detail' group_id=row.group.id %}" style="text-decoration:none;color:inherit">
+          <div class="lk-card-split">
+            <span class="lk-card-title">{{ row.group.name }}</span>
+            <span class="lk-card-meta">Jour {{ row.group.elapsed_days }}/{{ row.group.cycle_duration_days }}</span>
+          </div>
+          <div class="lk-carousel-chart">
+            <svg width="100%" height="100%" viewBox="0 0 {{ row.chart_points.width }} {{ row.chart_points.height }}" preserveAspectRatio="none" style="position:absolute;inset:0">
+              <polyline points="8,112 52,98 96,104 140,82 184,88 228,62 292,42" fill="none" stroke="var(--ink-soft)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".35"/>
+              <polyline points="{{ row.chart_points.points }}" fill="none" stroke="var(--reserve)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <polygon points="0,-5 12,0 0,5" fill="var(--reserve)" transform="translate(288 42)"/>
+            </svg>
+          </div>
+          <div class="lk-card-split">
+            <span class="lk-card-meta">Fonds de réserve</span>
+            <span class="lk-card-value">{{ row.group.reserve_amount|fc }} FC · {{ row.group.reserve_amount|usd }}</span>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="lk-quick-actions">
+    <a class="lk-quick-action" href="{% url 'dashboard:requests_tab' %}">
+      <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M232,96H208.94A44.7,44.7,0,0,0,216,72a44,44,0,0,0-76-30.4A44,44,0,0,0,64,72a44.7,44.7,0,0,0,7.06,24H48A16,16,0,0,0,32,112v32a16,16,0,0,0,16,16v64a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V160a16,16,0,0,0,16-16V112A16,16,0,0,0,232,96ZM140,56a28,28,0,1,1,28,28H140ZM88,84A28,28,0,1,1,116,56v28ZM48,112H120v32H48Zm16,48h56v64H64Zm128,64H136V160h56Zm16-80H136V112h72Z"/></svg>
+      <span>Demander avance</span>
+    </a>
+    <a class="lk-quick-action" href="{% url 'dashboard:history' %}">
+      <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Z"/></svg>
+      <span>Confirmer paiement{% if pending_payments_count %} · {{ pending_payments_count }}{% endif %}</span>
+    </a>
+  </div>
+
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin:20px 0 14px">
+    <div>
+      <h1 class="lk-page-title" style="margin:0">Mes groupes</h1>
+      <p class="lk-page-subtitle" style="margin:2px 0 0">Vos tontines actives</p>
+    </div>
+    <a href="{% url 'dashboard:join_group' %}" class="lk-topbar-icon lk-topbar-icon-accent" aria-label="Rejoindre un groupe">
+      <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M228,128a8,8,0,0,1-8,8H136v84a8,8,0,0,1-16,0V136H36a8,8,0,0,1,0-16h84V36a8,8,0,0,1,16,0v84h84A8,8,0,0,1,228,128Z"/></svg>
+    </a>
+  </div>
+
+  {% if not groups_view %}
+    <p class="lk-empty">Vous n'êtes membre d'aucune tontine pour l'instant. <a href="{% url 'dashboard:join_group' %}">Rejoindre avec un code</a>.</p>
+  {% endif %}
+
+  {% for row in groups_view %}
+    <a class="lk-card" href="{% url 'dashboard:group_detail' group_id=row.group.id %}">
+      <div class="lk-card-split">
+        <div class="lk-card-row">
+          <div class="lk-avatar">{{ row.group.name|slice:":2"|upper }}</div>
+          <div>
+            <div class="lk-card-title">{{ row.group.name }}</div>
+            <div class="lk-card-meta">{{ row.group.number_of_members }} membre{{ row.group.number_of_members|pluralize }} · Jour {{ row.group.elapsed_days }}/{{ row.group.cycle_duration_days }}</div>
+          </div>
+        </div>
+        {% if row.eligible %}<span class="chip chip-accent">Votre tour</span>{% endif %}
+      </div>
+      <div class="lk-progress"><div class="lk-progress-bar" style="width:{{ row.progress_percent }}%"></div></div>
+      <div class="lk-card-split">
+        <span class="lk-card-meta">Fonds de réserve</span>
+        <span class="lk-card-value">{{ row.group.reserve_amount|fc }} FC · {{ row.group.reserve_amount|usd }}</span>
+      </div>
+      <div class="lk-card-split">
+        <span class="lk-card-meta">Si vous quittez maintenant</span>
+        <span class="lk-card-value">{{ row.early_withdrawal_amount|fc }} FC · {{ row.early_withdrawal_amount|usd }}</span>
+      </div>
+    </a>
+  {% endfor %}
+
+  <a href="{% url 'dashboard:join_group' %}" class="btn btn-ghost lk-explore-link">
+    Explorer les tontines
+    <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg>
+  </a>
+{% endblock %}

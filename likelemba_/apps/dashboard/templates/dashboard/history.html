@@ -1,0 +1,29 @@
+{% extends "dashboard/app_base.html" %}
+
+{% block title %}Historique{% endblock %}
+
+{% block content %}
+  <h1 class="lk-page-title">Historique</h1>
+  <p class="lk-page-subtitle">Toutes vos cotisations, cagnottes et remboursements, tous groupes confondus.</p>
+
+  {% if rows %}
+    {% for row in rows %}
+      <div class="lk-card">
+        <div class="lk-card-split">
+          <div>
+            <div class="lk-card-title">{{ row.group.name }}</div>
+            <div class="lk-card-meta">{{ row.type_label }} · {{ row.date|date:"d/m/Y H:i" }}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="lk-card-value">{{ row.amount|floatformat:0 }} FC</div>
+            <span class="chip{% if row.status == 'validated' %} chip-done{% elif row.status == 'rejected' %}{% else %} chip-current{% endif %}">
+              {% if row.status == 'validated' %}Validée{% elif row.status == 'rejected' %}Rejetée{% else %}En attente{% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="lk-empty">Aucune transaction pour l'instant.</p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "dashboard/app_base.html" %}
+
+{% block title %}Demandes{% endblock %}
+
+{% block content %}
+  <h1 class="lk-page-title">Demandes</h1>
+  <p class="lk-page-subtitle">Votre position dans la file d'attente de chaque tontine.</p>
+
+  {% if memberships %}
+    {% for membership in memberships %}
+      <a class="lk-card" href="{% url 'dashboard:request_detail' group_id=membership.group.id %}">
+        <div class="lk-card-split">
+          <div class="lk-card-row">
+            <div class="lk-avatar">{{ membership.group.name|slice:":2"|upper }}</div>
+            <div>
+              <div class="lk-card-title">{{ membership.group.name }}</div>
+              <div class="lk-card-meta">Jour {{ membership.group.elapsed_days }}/{{ membership.group.cycle_duration_days }}</div>
+            </div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z"/></svg>
+        </div>
+      </a>
+    {% endfor %}
+  {% else %}
+    <p class="lk-empty">Vous n'êtes membre d'aucune tontine pour l'instant.</p>
+  {% endif %}
+{% endblock %}

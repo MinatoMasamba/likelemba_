@@ -1,0 +1,181 @@
+{% extends "dashboard/app_base.html" %}
+{% load dashboard_extras %}
+
+{% block title %}Profil{% endblock %}
+
+{% block topbar %}
+  <div class="lk-card-row" style="flex:1;min-width:0">
+    <div class="lk-avatar lk-avatar-lg"{% if profile.photo_user %} style="background-image:url('{{ profile.photo_user.url }}')"{% endif %}>
+      {% if not profile.photo_user %}{{ user.full_name|slice:":1"|upper }}{% endif %}
+    </div>
+    <div style="min-width:0">
+      <div class="lk-card-title" style="font-size:16px">{{ user.full_name }}</div>
+      <div class="lk-card-meta">{{ user.phone_number }}</div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="lk-card lk-menu-card">
+    <div class="lk-menu-row">
+      <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06Z"/></svg>
+      <span>Recevoir des notifications</span>
+      <form method="post" action="{% url 'dashboard:profile_toggle_notifications' %}">
+        {% csrf_token %}
+        <button type="submit" class="lk-switch{% if profile.notification_enabled %} is-on{% endif %}" aria-label="Notifications"><span></span></button>
+      </form>
+    </div>
+  </div>
+
+  <div class="lk-card lk-user-code-card">
+    <div class="lk-section-title" style="margin:0 0 6px">Code membre</div>
+    <div class="lk-user-code">{{ user_code }}</div>
+    <p class="lk-page-subtitle" style="margin:0 0 12px">Partagez ce code avec un administrateur pour rejoindre une tontine.</p>
+    <div class="lk-share-actions">
+      <a class="btn btn-secondary" href="https://wa.me/?text=Mon%20code%20Likelemba%20S%C3%A9curis%C3%A9%20est%20{{ user_code }}">
+        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><path d="M187.58,144.84l-32-16a8,8,0,0,0-8,.5l-14.69,9.8a40.55,40.55,0,0,1-16-16l9.8-14.69a8,8,0,0,0,.5-8l-16-32A8,8,0,0,0,104,64a40,40,0,0,0-40,40,88.1,88.1,0,0,0,88,88,40,40,0,0,0,40-40A8,8,0,0,0,187.58,144.84Z"/></svg>
+        WhatsApp
+      </a>
+      <button type="button" class="btn btn-secondary" data-share-code="{{ user_code }}">
+        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0ZM133.66,42.34a8,8,0,0,0-11.32,0l-40,40a8,8,0,1,0,11.32,11.32L120,67.31V152a8,8,0,0,0,16,0V67.31l26.34,26.35a8,8,0,0,0,11.32-11.32Z"/></svg>
+        Partager
+      </button>
+    </div>
+  </div>
+
+  <h3 class="lk-section-title" style="margin-top:4px">Statistiques</h3>
+  <div class="lk-card" style="padding:2px 16px">
+    <div class="lk-card-split" style="padding:11px 0;border-bottom:1px solid var(--line)">
+      <span>Score de fiabilité</span><span class="chip chip-member">{{ reliability }}/100</span>
+    </div>
+    <div class="lk-card-split" style="padding:11px 0;border-bottom:1px solid var(--line)">
+      <span>Cotisé au total</span><span class="lk-card-value">{{ profile.total_contributions|floatformat:0 }} FC · {{ profile.total_contributions|usd }}</span>
+    </div>
+    <div class="lk-card-split" style="padding:11px 0;border-bottom:1px solid var(--line)">
+      <span>Reçu au total</span><span class="lk-card-value">{{ profile.total_received|floatformat:0 }} FC · {{ profile.total_received|usd }}</span>
+    </div>
+    <div class="lk-card-split" style="padding:11px 0">
+      <span>Cycles réussis</span><span class="chip chip-current">{{ profile.successful_cycles }}</span>
+    </div>
+  </div>
+
+  {% if admin_stats %}
+    <h3 class="lk-section-title">Espace administrateur</h3>
+    <div class="lk-card">
+      <div class="lk-card-split" style="padding:6px 0;border-bottom:1px solid var(--line)">
+        <span>Groupes administrés</span><span class="chip chip-admin">{{ admin_stats.groups_count }}</span>
+      </div>
+      <div class="lk-card-split" style="padding:6px 0;border-bottom:1px solid var(--line)">
+        <span>Réserve totale</span><span class="lk-card-value">{{ admin_stats.total_reserve|floatformat:0 }} FC</span>
+      </div>
+      <div class="lk-card-split" style="padding:6px 0">
+        <span>En attente de validation</span><span class="chip chip-current">{{ admin_stats.pending_count }}</span>
+      </div>
+    </div>
+    <a href="{% url 'dashboard:admin_dashboard' %}" class="btn btn-secondary btn-block" style="margin-bottom:20px">Passer à l'espace administrateur</a>
+  {% endif %}
+
+  {% if early_withdrawal_view %}
+    <h3 class="lk-section-title">Retrait anticipé</h3>
+    <p class="lk-page-subtitle" style="margin-top:-6px">Ce que vous récupéreriez par groupe si vous quittiez avant la cagnotte (cotisation journalière × jours déjà payés).</p>
+    <div class="lk-card" style="padding:2px 16px">
+      {% for row in early_withdrawal_view %}
+        <div class="lk-card-split" style="padding:9px 0{% if not forloop.last %};border-bottom:1px solid var(--line){% endif %}">
+          <span>{{ row.group.name }}</span><span class="lk-card-value">{{ row.amount|floatformat:0 }} FC · {{ row.amount|usd }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="lk-card lk-menu-card">
+    <div class="lk-menu-row">
+      <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0ZM133.66,157.66a8,8,0,0,1-11.32,0l-40-40a8,8,0,0,1,11.32-11.32L120,132.69V32a8,8,0,0,1,16,0V132.69l26.34-26.35a8,8,0,0,1,11.32,11.32Z"/></svg>
+      <span>Installer l'application</span>
+      <button type="button" class="btn btn-secondary" id="installAppBtn" disabled>Installer l'app</button>
+    </div>
+    <a href="mailto:support@likelemba.cd" class="lk-menu-row">
+      <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M140,180a12,12,0,1,1-12-12A12,12,0,0,1,140,180ZM128,72c-22.06,0-40,16.15-40,36v4a8,8,0,0,0,16,0v-4c0-11,10.77-20,24-20s24,9,24,20-10.77,20-24,20a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v-.72c18.24-3.35,32-17.9,32-35.28C168,88.15,150.06,72,128,72Z"/></svg>
+      <span>Aide & support</span>
+      <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z"/></svg>
+    </a>
+  </div>
+
+  <h3 class="lk-section-title">Paramètres</h3>
+  <div class="lk-card lk-menu-card">
+    <a href="{% url 'dashboard:profile_edit' %}" class="lk-menu-row">
+      <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M230.92,212c-15.23-26.33-38.7-45.21-65.86-53.87a72,72,0,1,0-74.12,0C63.78,166.75,40.31,185.63,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8Z"/></svg>
+      <span>Modifier mon profil</span>
+      <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z"/></svg>
+    </a>
+    <a href="{% url 'dashboard:password_change' %}" class="lk-menu-row">
+      <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M216,96H176V72a48,48,0,0,0-96,0V96H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H216a8,8,0,0,0,8-8V104A8,8,0,0,0,216,96ZM96,72a32,32,0,0,1,64,0V96H96Z"/></svg>
+      <span>Changer le mot de passe</span>
+      <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z"/></svg>
+    </a>
+    <div class="lk-menu-row">
+      <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24Zm88,104a87.61,87.61,0,0,1-3.33,24H175.94a154.9,154.9,0,0,0,0-48h36.73A87.61,87.61,0,0,1,216,128Z"/></svg>
+      <span>Langue</span>
+      <div class="lk-segmented">
+        <form method="post" action="{% url 'dashboard:profile_set_language' %}">
+          {% csrf_token %}<input type="hidden" name="language" value="fr">
+          <button type="submit" class="{% if profile.language == 'fr' %}is-active{% endif %}">FR</button>
+        </form>
+        <form method="post" action="{% url 'dashboard:profile_set_language' %}">
+          {% csrf_token %}<input type="hidden" name="language" value="ln">
+          <button type="submit" class="{% if profile.language == 'ln' %}is-active{% endif %}">LN</button>
+        </form>
+      </div>
+    </div>
+    <div class="lk-menu-row">
+      <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,35-60.89Z"/></svg>
+      <span>Thème</span>
+      <button type="button" class="lk-topbar-icon" id="themeToggle" aria-label="Changer de thème">
+        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><path id="themeIconPath" d=""/></svg>
+      </button>
+    </div>
+  </div>
+
+  <form method="post" action="{% url 'dashboard:logout' %}" style="margin-top:20px">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-outline btn-block">
+      <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M124,216a12,12,0,0,1-12,12H48a12,12,0,0,1-12-12V40A12,12,0,0,1,48,28h64a12,12,0,0,1,0,24H60V204h52A12,12,0,0,1,124,216Zm103.4-96.7-40-40a12,12,0,0,0-17,17L195.1,121H112a12,12,0,0,0,0,24h83.1l-24.7,24.7a12,12,0,0,0,17,17l40-40A12,12,0,0,0,227.4,119.3Z"/></svg>
+      Se déconnecter
+    </button>
+  </form>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    document.querySelectorAll('[data-share-code]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var code = button.getAttribute('data-share-code');
+        var text = 'Mon code Likelemba Sécurisé est ' + code;
+        if (navigator.share) {
+          navigator.share({ text: text }).catch(function () {});
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).catch(function () {});
+        }
+      });
+    });
+
+    (function () {
+      var installBtn = document.getElementById('installAppBtn');
+      if (!installBtn) return;
+      var deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.disabled = false;
+      });
+      installBtn.addEventListener('click', function () {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.finally(function () { deferredPrompt = null; installBtn.disabled = true; });
+      });
+      window.addEventListener('appinstalled', function () {
+        installBtn.disabled = true;
+        installBtn.textContent = 'Installée';
+      });
+    })();
+  </script>
+{% endblock %}

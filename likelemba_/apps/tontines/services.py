@@ -249,6 +249,49 @@ class MembershipService:
             logger.info(f"Nouveau membre {replacing_user.phone_number} ajouté au groupe {group.name}")
             return membership
 
+    @staticmethod
+    def move_member(membership, target_group):
+        """
+        Déplace un membre actif vers un autre groupe que le même administrateur
+        gère : retire sa position dans la file du groupe source (en réindexant
+        les positions restantes), l'ajoute en fin de file du groupe cible, et
+        remet à zéro ses statistiques (elles sont propres à chaque groupe).
+        """
+        from apps.tontines.models import Membership, QueuePosition
+
+        if not membership.is_active:
+            raise BusinessLogicError("Ce membre n'est plus actif.")
+
+        if Membership.objects.filter(user=membership.user, group=target_group).exclude(id=membership.id).exists():
+            raise BusinessLogicError("Cet utilisateur est déjà membre du groupe cible.")
+
+        target_cycle = target_group.cycles.filter(is_active=True, is_completed=False).first()
+        if not target_cycle:
+            raise BusinessLogicError("Le groupe cible n'a pas de cycle actif.")
+
+        with transaction.atomic():
+            source_cycle = membership.group.cycles.filter(is_active=True, is_completed=False).first()
+            if source_cycle:
+                QueuePosition.objects.filter(cycle=source_cycle, membership=membership).delete()
+                remaining = QueuePosition.objects.filter(cycle=source_cycle).order_by('position')
+                for idx, pos in enumerate(remaining, start=1):
+                    pos.position = idx
+                    pos.save(update_fields=['position'])
+
+            membership.group = target_group
+            membership.total_contributed = Decimal('0')
+            membership.total_received = Decimal('0')
+            membership.debt_count = 0
+            membership.has_received_payout = False
+            membership.joined_at = timezone.now()
+            membership.save()
+
+            last_position = QueuePosition.objects.filter(cycle=target_cycle).count()
+            QueuePosition.objects.create(cycle=target_cycle, membership=membership, position=last_position + 1)
+
+            logger.info(f"Membre {membership.user.phone_number} déplacé vers le groupe {target_group.name}")
+            return membership
+
 
 class JoinRequestService:
     """

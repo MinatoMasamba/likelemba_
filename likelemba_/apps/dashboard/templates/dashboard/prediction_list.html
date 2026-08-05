@@ -1,0 +1,37 @@
+{% extends "dashboard/app_base.html" %}
+
+{% block title %}Prédiction{% endblock %}
+
+{% block content %}
+  <h1 class="lk-page-title">Prédiction &amp; risque</h1>
+  <p class="lk-page-subtitle">Score de risque et décision recommandée par groupe.</p>
+
+  {% if cards %}
+    {% for row in cards %}
+      <a class="lk-card" href="{% url 'dashboard:prediction_detail' group_id=row.group.id %}" style="cursor:pointer">
+        <div class="lk-card-split">
+          <span class="lk-card-title">{{ row.group.name }}</span>
+          <span class="chip {{ row.tier.chip_class }}">{{ row.tier.label }}</span>
+        </div>
+        <div class="lk-progress"><div class="lk-progress-bar" style="width:{{ row.score }}%"></div></div>
+        <div class="lk-card-meta">{{ row.score }}/100</div>
+        <div style="font-size:12.5px;margin:2px 0 8px">{{ row.tier.action }}</div>
+
+        <div class="lk-prediction-chart">
+          <svg width="100%" height="100%" viewBox="0 0 {{ row.chart.width }} {{ row.chart.height }}" preserveAspectRatio="none" style="position:absolute;inset:0">
+            <polygon points="{{ row.chart.band_points }}" fill="var(--reserve)" opacity="0.35"></polygon>
+            <polyline points="{{ row.chart.historical_points }}" fill="none" stroke="var(--reserve)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            <polyline points="{{ row.chart.forecast_points }}" fill="none" stroke="var(--reserve)" stroke-width="2.5" stroke-dasharray="5 4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+          </svg>
+        </div>
+        <div class="lk-chart-legend">
+          <span><i></i>Historique</span>
+          <span><i class="is-dashed"></i>Prévision</span>
+          <span><i class="is-soft"></i>Marge haute/basse</span>
+        </div>
+      </a>
+    {% endfor %}
+  {% else %}
+    <p class="lk-empty">Rejoignez une tontine pour voir sa prédiction.</p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Likelemba Sécurisé — La tontine, enfin sous contrôle</title>
+<script src="__SUPPORT_JS_URL__"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<script src="__IMAGE_SLOT_JS_URL__"></script>
+<style>
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'Plus Jakarta Sans',sans-serif}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,22px) scale(1.06)}100%{transform:translate(0,0) scale(1)}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}}
+</style>
+</helmet>
+<div ref="{{ rootRef }}" style="min-height:100vh;background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;overflow-x:hidden;{{ themeVarsStyle }}">
+
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:16px clamp(20px,5vw,40px);background:color-mix(in srgb, var(--bg) 80%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)">
+    <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;letter-spacing:-0.01em">Likelemba <span style="color:var(--primary)">Sécurisé</span></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button type="button" onClick="{{ toggleTheme }}" aria-label="Changer de thème" style="width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none" style-hover="border-color:var(--primary)">
+        <svg width="17" height="17" viewBox="0 0 256 256" fill="currentColor"><path d="{{ themeIconPath }}"/></svg>
+      </button>
+      <a href="__SIGNUP_ADMIN_URL__" style="text-decoration:none;color:var(--ink);font-weight:600;font-size:14px;padding:9px 16px;border-radius:999px;border:1px solid var(--border);transition:border-color .2s ease" style-hover="border-color:var(--primary)">Devenir admin</a>
+      <a href="__LOGIN_URL__" style="text-decoration:none;background:var(--primary);color:var(--primary-ink);font-weight:600;font-size:14px;padding:10px 20px;border-radius:999px;font-family:'Plus Jakarta Sans',sans-serif;transition:transform .2s ease,box-shadow .2s ease" style-hover="transform:translateY(-2px);box-shadow:var(--shadow)">Se connecter</a>
+    </div>
+  </nav>
+
+  <section id="hero" style="position:relative;overflow:hidden;padding:150px clamp(20px,6vw,40px) 110px;display:flex;flex-direction:column;align-items:center;text-align:center;min-height:88vh;justify-content:center">
+    <div style="position:absolute;top:-140px;right:-110px;width:420px;height:420px;border-radius:50%;background:var(--primary);opacity:0.18;filter:blur(70px);animation:drift 16s ease-in-out infinite;pointer-events:none"></div>
+    <div style="position:absolute;bottom:-170px;left:-130px;width:480px;height:480px;border-radius:50%;background:var(--accent);opacity:0.16;filter:blur(80px);animation:drift 20s ease-in-out infinite reverse;pointer-events:none"></div>
+
+    <span class="reveal" style="opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);background:color-mix(in srgb, var(--primary) 12%, transparent);padding:8px 16px;border-radius:999px">L'épargne collective, réinventée</span>
+    <h1 class="reveal" style="opacity:0;transform:translateY(24px);transition:opacity .8s ease .05s,transform .8s ease .05s;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(38px,6vw,72px);line-height:1.03;letter-spacing:-0.02em;max-width:820px;margin:20px 0 20px;position:relative;z-index:1">La tontine, enfin <span style="color:var(--primary)">sous contrôle.</span></h1>
+    <p class="reveal" style="opacity:0;transform:translateY(24px);transition:opacity .8s ease .12s,transform .8s ease .12s;font-size:18px;color:var(--ink-soft);max-width:560px;margin:0 0 36px;line-height:1.6;position:relative;z-index:1">Cotisations, files d'attente et cagnottes suivies en temps réel — avec une prédiction du risque à chaque étape, pour les membres comme pour les administrateurs.</p>
+    <div class="reveal" style="opacity:0;transform:translateY(24px);transition:opacity .8s ease .2s,transform .8s ease .2s;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1">
+      <a href="__LOGIN_URL__" style="text-decoration:none;background:var(--primary);color:var(--primary-ink);font-weight:700;font-size:15px;padding:15px 30px;border-radius:999px;transition:transform .2s ease,box-shadow .2s ease" style-hover="transform:translateY(-2px);box-shadow:var(--shadow)">Se connecter</a>
+      <button type="button" onClick="{{ scrollToHow }}" style="display:flex;align-items:center;gap:8px;background:transparent;color:var(--ink);border:1.5px solid var(--border);font-weight:600;font-size:15px;padding:14px 26px;border-radius:999px;cursor:pointer;transition:border-color .2s ease,transform .2s ease" style-hover="border-color:var(--primary);transform:translateY(-2px)">
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"/></svg>
+        Comment ça marche
+      </button>
+    </div>
+  </section>
+
+  <section data-stats-trigger class="reveal" style="opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease;padding:44px clamp(20px,6vw,40px);display:grid;grid-template-columns:repeat(2,1fr);gap:22px;max-width:480px;margin:0 auto;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div style="text-align:center">
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(26px,4vw,38px);color:var(--primary)"><span data-count-to="120" data-suffix="+">0+</span></div>
+      <div style="font-size:13px;color:var(--ink-soft);margin-top:6px">Tontines actives</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(26px,4vw,38px);color:var(--primary)"><span data-count-to="3400" data-suffix="+">0+</span></div>
+      <div style="font-size:13px;color:var(--ink-soft);margin-top:6px">Membres actifs</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(26px,4vw,38px);color:var(--primary)"><span data-count-to="98" data-suffix="%">0%</span></div>
+      <div style="font-size:13px;color:var(--ink-soft);margin-top:6px">Cotisations à temps</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(26px,4vw,38px);color:var(--primary)"><span data-count-to="2100000" data-suffix=" FC">0 FC</span></div>
+      <div style="font-size:13px;color:var(--ink-soft);margin-top:6px">Cagnotte moyenne distribuée</div>
+    </div>
+  </section>
+
+  <section id="comment-ca-marche" style="padding:80px clamp(20px,6vw,40px);max-width:480px;margin:0 auto">
+    <div class="reveal" style="opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease;text-align:center;margin-bottom:8px">
+      <span style="font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--primary)">Comment ça marche</span>
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(28px,4vw,40px);margin:14px 0 10px">Une expérience pensée pour deux rôles</h2>
+      <p style="color:var(--ink-soft);max-width:580px;margin:0 auto;line-height:1.6">Ce bouton sert à ça : comprendre ce que l'application fait pour vous, que vous rejoigniez une tontine ou que vous en administriez une.</p>
+    </div>
+    <div class="reveal" style="opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease;display:flex;justify-content:center;gap:8px;margin:32px 0 40px;flex-wrap:wrap">
+      <button type="button" onClick="{{ setAudienceMembers }}" style="padding:11px 24px;border-radius:999px;border:1px solid var(--border);cursor:pointer;font-weight:600;font-size:14px;background:{{ membersTabBg }};color:{{ membersTabColor }};transition:background .2s ease,color .2s ease">Pour les membres</button>
+      <button type="button" onClick="{{ setAudienceAdmins }}" style="padding:11px 24px;border-radius:999px;border:1px solid var(--border);cursor:pointer;font-weight:600;font-size:14px;background:{{ adminsTabBg }};color:{{ adminsTabColor }};transition:background .2s ease,color .2s ease">Pour les administrateurs</button>
+    </div>
+
+    <sc-if value="{{ isMembers }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;color:var(--primary);font-size:22px;margin-bottom:10px">01</div>
+          <div style="font-weight:700;margin-bottom:6px">Rejoignez avec un code</div>
+          <div style="font-size:13.5px;color:var(--ink-soft);line-height:1.55">Un administrateur vous invite : entrez son code pour rejoindre sa tontine.</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;color:var(--primary);font-size:22px;margin-bottom:10px">02</div>
+          <div style="font-weight:700;margin-bottom:6px">Cotisez à votre rythme</div>
+          <div style="font-size:13.5px;color:var(--ink-soft);line-height:1.55">Payez à temps ou en avance, en franc congolais ou en dollar.</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;color:var(--primary);font-size:22px;margin-bottom:10px">03</div>
+          <div style="font-weight:700;margin-bottom:6px">Suivez la file d'attente</div>
+          <div style="font-size:13.5px;color:var(--ink-soft);line-height:1.55">Votre position, votre tour et la cagnotte nette, mis à jour en direct.</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;color:var(--primary);font-size:22px;margin-bottom:10px">04</div>
+          <div style="font-weight:700;margin-bottom:6px">Anticipez le risque</div>
+          <div style="font-size:13.5px;color:var(--ink-soft);line-height:1.55">Une prédiction claire de ce que vous récupéreriez en cas de retrait anticipé.</div>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isAdmins }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;color:var(--primary);font-size:22px;margin-bottom:10px">01</div>
+          <div style="font-weight:700;margin-bottom:6px">Créez une tontine</div>
+          <div style="font-size:13.5px;color:var(--ink-soft);line-height:1.55">Montant, nombre de membres, périodicité : le cycle se calcule seul.</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;color:var(--primary);font-size:22px;margin-bottom:10px">02</div>
+          <div style="font-weight:700;margin-bottom:6px">Gérez les membres</div>
+          <div style="font-size:13.5px;color:var(--ink-soft);line-height:1.55">Ajoutez par code de compte, remplacez, retirez ou déplacez un membre.</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;color:var(--primary);font-size:22px;margin-bottom:10px">03</div>
+          <div style="font-weight:700;margin-bottom:6px">Validez les paiements</div>
+          <div style="font-size:13.5px;color:var(--ink-soft);line-height:1.55">Chaque cotisation et chaque demande passe par votre validation.</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;color:var(--primary);font-size:22px;margin-bottom:10px">04</div>
+          <div style="font-weight:700;margin-bottom:6px">Surveillez la santé du groupe</div>
+          <div style="font-size:13.5px;color:var(--ink-soft);line-height:1.55">Score de fiabilité, membres en retard et prédictions par tontine.</div>
+        </div>
+      </div>
+    </sc-if>
+  </section>
+
+  <section id="apercu" style="padding:80px clamp(20px,6vw,40px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:44px;max-width:480px;margin:0 auto">
+    <div class="reveal" style="opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s ease;max-width:420px;text-align:center">
+      <span style="font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--primary)">Aperçu</span>
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(26px,4vw,36px);margin:14px 0 14px;line-height:1.15">Tout votre argent collectif, visible d'un coup d'œil.</h2>
+      <p style="color:var(--ink-soft);line-height:1.6;margin:0 0 22px">File d'attente, prédictions de risque, historique des paiements : chaque écran est pensé pour la clarté, pas pour la complexité.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;text-align:left">
+        <div style="display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600"><span style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex:none"></span>Prédiction du risque en direct</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600"><span style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex:none"></span>File d'attente transparente</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600"><span style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex:none"></span>Cotisations FC ou USD, sans friction</div>
+      </div>
+    </div>
+    <div class="reveal" style="opacity:0;transform:translateY(24px) scale(.96);transition:opacity .9s ease,transform .9s ease;position:relative;width:250px;height:520px;flex:none">
+      <div style="width:100%;height:100%;border-radius:36px;background:var(--surface);border:8px solid var(--ink);box-shadow:var(--shadow);overflow:hidden;position:relative">
+        <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:84px;height:18px;border-radius:10px;background:var(--ink);z-index:2"></div>
+        <image-slot id="landing-app-preview" shape="rect" style="width:100%;height:100%" placeholder="Aperçu de l'application"></image-slot>
+      </div>
+      <div style="position:absolute;top:30px;left:-60px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);animation:floatY 5s ease-in-out infinite;max-width:150px">
+        <div style="font-size:11px;color:var(--ink-soft)">Score de fiabilité</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px;color:var(--primary)">92/100</div>
+      </div>
+      <div style="position:absolute;bottom:50px;right:-56px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);animation:floatY 6s ease-in-out infinite 1s;max-width:160px">
+        <div style="font-size:11px;color:var(--ink-soft)">Prochaine cagnotte</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:16px">68 000 FC</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:100px clamp(20px,6vw,40px) 70px;text-align:center">
+    <h2 class="reveal" style="opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(28px,4vw,40px);margin:0 0 26px;max-width:600px;margin-left:auto;margin-right:auto">Prêt à sécuriser votre prochaine tontine ?</h2>
+    <a href="__LOGIN_URL__" class="reveal" style="opacity:0;transform:translateY(20px);transition:opacity .7s ease .1s,transform .7s ease .1s;text-decoration:none;background:var(--primary);color:var(--primary-ink);font-weight:700;font-size:15px;padding:16px 34px;border-radius:999px;display:inline-block;transition:transform .2s ease,box-shadow .2s ease" style-hover="transform:translateY(-2px);box-shadow:var(--shadow)">Se connecter</a>
+  </section>
+
+  <footer style="padding:26px clamp(20px,6vw,40px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700">Likelemba Sécurisé</div>
+    <div style="color:var(--ink-soft);font-size:13px">© 2026 — Épargne collective, en confiance.</div>
+  </footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { theme: "light", audience: "members" };
+  rootRef = React.createRef();
+
+  componentDidMount() {
+    try {
+      const saved = localStorage.getItem("likelemba_theme");
+      if (saved === "light" || saved === "dark") this.setState({ theme: saved });
+    } catch (e) {}
+    const root = this.rootRef.current;
+    if (!root) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const t = el.style.transform.replace(/translate[XY]?\([^)]*\)/g, "").trim();
+          el.style.opacity = "1";
+          el.style.transform = "translate(0,0) scale(1)";
+          if (el.hasAttribute("data-stats-trigger") && !this._statsAnimated) {
+            this._statsAnimated = true;
+            this.animateStats(el);
+          }
+          io.unobserve(el);
+        }
+      });
+    }, { threshold: 0.2 });
+    root.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+    this._io = io;
+  }
+
+  componentWillUnmount() {
+    if (this._io) this._io.disconnect();
+  }
+
+  animateStats(container) {
+    const nums = container.querySelectorAll("[data-count-to]");
+    nums.forEach((el) => {
+      const target = parseFloat(el.getAttribute("data-count-to"));
+      const suffix = el.getAttribute("data-suffix") || "";
+      const start = performance.now();
+      const dur = 1300;
+      const step = (t) => {
+        const p = Math.min(1, (t - start) / dur);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * eased).toLocaleString("fr-FR") + suffix;
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+  }
+
+  toggleTheme = () => {
+    const next = this.state.theme === "light" ? "dark" : "light";
+    this.setState({ theme: next });
+    try { localStorage.setItem("likelemba_theme", next); } catch (e) {}
+  };
+  setAudienceMembers = () => this.setState({ audience: "members" });
+  setAudienceAdmins = () => this.setState({ audience: "admins" });
+  scrollToHow = (e) => {
+    e.preventDefault();
+    const el = document.getElementById("comment-ca-marche");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  renderVals() {
+    const s = this.state;
+    const dark = s.theme === "dark";
+    return {
+      rootRef: this.rootRef,
+      themeVarsStyle: dark
+        ? "--bg:#0B1310;--surface:#122019;--ink:#F3F1EA;--ink-soft:#B7C2BB;--primary:#34D399;--primary-ink:#06120D;--accent:#F2B807;--border:#1E332B;--shadow:0 20px 60px rgba(0,0,0,0.45);"
+        : "--bg:#FAF7EF;--surface:#FFFFFF;--ink:#12201A;--ink-soft:#57655D;--primary:#0E5C46;--primary-ink:#FFFFFF;--accent:#B9790A;--border:#E7E0CF;--shadow:0 20px 50px rgba(16,32,26,0.14);",
+      themeIconPath: dark
+        ? "M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"
+        : "M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23Z",
+      toggleTheme: this.toggleTheme,
+      scrollToHow: this.scrollToHow,
+      isMembers: s.audience === "members",
+      isAdmins: s.audience === "admins",
+      setAudienceMembers: this.setAudienceMembers,
+      setAudienceAdmins: this.setAudienceAdmins,
+      membersTabBg: s.audience === "members" ? "var(--primary)" : "transparent",
+      membersTabColor: s.audience === "members" ? "var(--primary-ink)" : "var(--ink)",
+      adminsTabBg: s.audience === "admins" ? "var(--primary)" : "transparent",
+      adminsTabColor: s.audience === "admins" ? "var(--primary-ink)" : "var(--ink)",
+    };
+  }
+}
+</script>
+</body>
+</html>

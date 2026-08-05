@@ -4,6 +4,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
+from apps.tontines.models import LikelembaGroup
+
 User = get_user_model()
 
 
@@ -23,6 +25,15 @@ class EmailAuthenticationForm(AuthenticationForm):
         'invalid_login': "Adresse email ou mot de passe incorrect.",
         'inactive': "Ce compte a été désactivé.",
     }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # AuthenticationForm.__init__ recopie le max_length du champ
+        # USERNAME_FIELD du modèle (phone_number, 17 caractères) sur le champ
+        # "username", quel que soit son type — ici un EmailField, où 17
+        # caractères tronquerait la quasi-totalité des adresses email réelles.
+        self.fields['username'].max_length = 254
+        self.fields['username'].widget.attrs['maxlength'] = 254
 
 
 class SignupForm(forms.Form):
@@ -95,5 +106,96 @@ class SignupForm(forms.Form):
 
 
 class MemberReplaceForm(forms.Form):
-    phone_number = forms.CharField(label="Téléphone du remplaçant")
+    phone_number = forms.CharField(
+        label="Téléphone du membre",
+        widget=forms.TextInput(attrs={'placeholder': '+243900000000'}),
+    )
     position = forms.IntegerField(label="Position dans la file (optionnel)", required=False, min_value=1)
+
+
+class JoinByCodeForm(forms.Form):
+    invite_code = forms.CharField(
+        label="Code d'invitation",
+        max_length=12,
+        widget=forms.TextInput(attrs={'placeholder': 'BKM4X9Q2', 'autofocus': True, 'autocapitalize': 'characters'}),
+    )
+
+
+class GroupCreateForm(forms.ModelForm):
+    class Meta:
+        model = LikelembaGroup
+        fields = [
+            'name', 'description', 'contribution_amount', 'security_levy',
+            'cycle_duration_days', 'distribution_interval_days',
+        ]
+        labels = {
+            'name': "Nom de la tontine",
+            'description': "Message de bienvenue (optionnel)",
+            'contribution_amount': "Cotisation journalière (FC)",
+            'security_levy': "Prélèvement de sécurité par cotisation (FC)",
+            'cycle_duration_days': "Durée totale du cycle (jours)",
+            'distribution_interval_days': "Intervalle entre deux cagnottes (jours)",
+        }
+        help_texts = {
+            'security_levy': "Environ 10 % de la cotisation est une valeur courante.",
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'autofocus': True, 'placeholder': 'Ex. : Tontine des voisins'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Un mot pour les futurs membres…'}),
+            'contribution_amount': forms.NumberInput(attrs={'placeholder': '5000'}),
+            'security_levy': forms.NumberInput(attrs={'placeholder': '500'}),
+            'cycle_duration_days': forms.NumberInput(attrs={'placeholder': '70'}),
+            'distribution_interval_days': forms.NumberInput(attrs={'placeholder': '3'}),
+        }
+
+
+class AdminMoveMemberForm(forms.Form):
+    target_group = forms.ModelChoiceField(
+        queryset=LikelembaGroup.objects.none(),
+        label="Groupe cible",
+        empty_label="Choisir un groupe…",
+    )
+
+    def __init__(self, *args, other_groups=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if other_groups is not None:
+            self.fields['target_group'].queryset = other_groups
+
+
+class ProfileEditForm(forms.Form):
+    full_name = forms.CharField(label="Nom complet", max_length=255)
+    phone_number = forms.CharField(label="Téléphone", max_length=17)
+    photo_user = forms.ImageField(label="Photo de profil", required=False)
+    notification_enabled = forms.BooleanField(label="Notifications activées", required=False)
+
+    def __init__(self, *args, instance=None, profile=None, **kwargs):
+        self.user_instance = instance
+        self.profile_instance = profile
+        initial = kwargs.pop('initial', None) or {}
+        if instance is not None:
+            initial.setdefault('full_name', instance.full_name)
+            initial.setdefault('phone_number', instance.phone_number)
+        if profile is not None:
+            initial.setdefault('notification_enabled', profile.notification_enabled)
+        kwargs['initial'] = initial
+        super().__init__(*args, **kwargs)
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data['phone_number'].strip()
+        qs = User.objects.filter(phone_number=phone_number)
+        if self.user_instance is not None:
+            qs = qs.exclude(pk=self.user_instance.pk)
+        if qs.exists():
+            raise ValidationError("Un autre compte utilise déjà ce numéro de téléphone.")
+        return phone_number
+
+    def save(self):
+        self.user_instance.full_name = self.cleaned_data['full_name']
+        self.user_instance.phone_number = self.cleaned_data['phone_number']
+        self.user_instance.save(update_fields=['full_name', 'phone_number'])
+
+        self.profile_instance.notification_enabled = self.cleaned_data['notification_enabled']
+        if self.cleaned_data.get('photo_user'):
+            self.profile_instance.photo_user = self.cleaned_data['photo_user']
+        self.profile_instance.save()
+        return self.user_instance

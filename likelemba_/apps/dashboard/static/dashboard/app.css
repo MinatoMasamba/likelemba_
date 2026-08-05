@@ -1,0 +1,402 @@
+/* Espace connecté (membre + administrateur) : cadre "app mobile" superposé
+   au shell classique du tableau de bord. Réutilise les tokens de couleur de
+   style.css (--paper, --ink, --reserve, --vision, --critical, --line,
+   --shadow — déjà définis en clair ET en sombre) : c'est la même identité
+   de marque que la landing page et les pages d'authentification, pas un
+   second système de design. Seule différence volontaire : ici, la police
+   est 'Inter' (dense, neutre, pensée pour une liste d'écran mobile) plutôt
+   que Plus Jakarta Sans/Bricolage Grotesque (plus éditorial, pour la
+   landing/l'auth) — et le thème sombre est celui affiché par défaut. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* La page ne doit jamais défiler horizontalement elle-même — seul le
+   carrousel interne (.lk-carousel) doit pouvoir glisser, dans sa propre
+   boîte. Sans ça, la barre de défilement horizontale du navigateur (bas de
+   fenêtre) peut apparaître dès qu'un enfant déborde d'un pixel. */
+html { overflow-x: hidden; }
+html::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+body.lk-body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  display: flex;
+  justify-content: center;
+}
+body.lk-body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+/* style.css met les h1-h3 en Bricolage Grotesque (éditorial, pour la landing/l'auth) —
+   dans l'app, tout reste en Inter, y compris les titres, pour la densité voulue. */
+.lk-shell h1, .lk-shell h2, .lk-shell h3 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 700;
+}
+
+.lk-shell {
+  width: 100%;
+  max-width: 460px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--paper);
+}
+
+/* — barre supérieure — */
+.lk-topbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px 10px;
+}
+.lk-topbar-back {
+  width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--paper-raised); color: var(--ink);
+  display: flex; align-items: center; justify-content: center; flex: none; cursor: pointer;
+  text-decoration: none;
+}
+.lk-topbar-title { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 17px; margin: 0; flex: 1; min-width: 0; }
+.lk-topbar-brand { font-weight: 700; font-size: 17px; color: var(--ink); text-decoration: none; }
+.lk-topbar-brand span { color: var(--reserve); }
+.lk-topbar-icon {
+  width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--paper-raised); color: var(--ink);
+  display: flex; align-items: center; justify-content: center; flex: none; cursor: pointer;
+  position: relative; text-decoration: none;
+}
+.lk-topbar-icon:hover { border-color: var(--reserve); }
+.lk-topbar-icon-accent {
+  border-radius: 10px; border-color: var(--reserve); color: var(--reserve); background: transparent;
+}
+
+/* — badge de notification — */
+.lk-badge {
+  position: absolute; top: -3px; right: -3px; min-width: 16px; height: 16px; padding: 0 3px;
+  border-radius: 999px; background: var(--vision); color: var(--paper-raised);
+  font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+
+/* — contenu scrollable — */
+.lk-content {
+  flex: 1;
+  padding: 8px 18px 28px;
+}
+.lk-content.has-tabbar { padding-bottom: 96px; }
+.lk-content.has-sticky { padding-bottom: 104px; }
+
+.lk-page-title { font-size: 21px; margin: 4px 0 2px; }
+.lk-page-subtitle { color: var(--ink-soft); font-size: 12.5px; margin: 0 0 16px; }
+.lk-section-title {
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft);
+  margin: 20px 0 8px;
+}
+.lk-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin: 0 0 4px; }
+
+/* — cartes compactes (listes d'écran mobile) — */
+.lk-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+a.lk-card { transition: transform .15s ease, box-shadow .15s ease; }
+a.lk-card:hover, a.lk-card:focus-visible { box-shadow: var(--shadow); transform: translateY(-1px); }
+.lk-card-row { display: flex; align-items: center; gap: 10px; }
+.lk-card-row + .lk-card-row { margin-top: 8px; }
+.lk-card-title { font-weight: 600; font-size: 14.5px; }
+.lk-card-meta { font-size: 11.5px; color: var(--ink-soft); display: flex; gap: 6px; align-items: center; }
+.lk-card-value { font-weight: 600; font-size: 13px; font-variant-numeric: tabular-nums; }
+.lk-card-split { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+
+/* — avatar initiales — */
+.lk-avatar {
+  width: 38px; height: 38px; border-radius: 50%; flex: none;
+  background: var(--reserve-deep); color: var(--reserve-deep-ink);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; font-size: 13px; overflow: hidden;
+  background-size: cover; background-position: center;
+}
+.lk-avatar.lk-avatar-lg { width: 56px; height: 56px; font-size: 18px; }
+.lk-avatar.lk-avatar-sm { width: 30px; height: 30px; font-size: 11px; }
+
+/* — barre de progression fine — */
+.lk-progress { height: 5px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 6px 0; }
+.lk-progress-bar { height: 100%; background: var(--reserve); border-radius: 4px; }
+
+/* — carrousel horizontal — */
+.lk-carousel {
+  display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+  margin: 0 -18px 6px; padding: 0 18px 4px;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.lk-carousel::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.lk-carousel-card {
+  flex: 0 0 100%; scroll-snap-align: start;
+  background: var(--paper-raised); border: 1px solid var(--line); border-radius: 18px;
+  padding: 16px; display: flex; flex-direction: column; gap: 8px;
+}
+.lk-carousel-chart {
+  height: 130px; border-radius: 10px; overflow: hidden; position: relative;
+  background-image:
+    repeating-linear-gradient(to right, var(--line) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 26px);
+}
+
+/* — graphique pleine largeur — */
+.lk-chart-wrap {
+  height: 150px; border-radius: 12px; overflow: hidden; position: relative;
+  background: var(--paper); border: 1px solid var(--line); margin: 6px 0;
+}
+
+/* — mini-graphique des cartes de prédiction (fond quadrillé façon papier
+   millimétré, repris du prototype) — */
+.lk-prediction-chart {
+  height: 110px; border-radius: 10px; overflow: hidden; position: relative;
+  background-image:
+    repeating-linear-gradient(to right, var(--line) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 22px);
+}
+
+/* — actions rapides en grille — */
+.lk-quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0 18px; }
+.lk-quick-action {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px 8px; border-radius: 10px; border: 1px solid var(--line);
+  background: transparent; color: var(--ink); text-decoration: none;
+  font-size: 12px; font-weight: 600; text-align: center;
+}
+.lk-quick-action:hover { border-color: var(--reserve); }
+.lk-prototype-action {
+  min-height: 74px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  text-align: center;
+  line-height: 1.2;
+}
+.lk-prototype-action span { font-size: 12px; }
+.lk-explore-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: fit-content;
+  margin: 18px auto 4px;
+}
+
+/* — barre d'actions collante en bas d'écran — */
+.lk-sticky-actions {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 0;
+  width: 100%; max-width: 460px; display: flex; gap: 10px;
+  padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+  background: var(--paper-raised); border-top: 1px solid var(--line); box-shadow: var(--shadow);
+  z-index: 30;
+}
+.lk-sticky-actions .btn { flex: 1; text-align: center; }
+
+/* — bouton flottant — */
+.lk-fab {
+  position: fixed; left: 50%; bottom: 88px; transform: translateX(148px);
+  width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--reserve); color: var(--reserve-ink);
+  display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow);
+  z-index: 25; text-decoration: none;
+}
+
+/* — barre de navigation basse — */
+.lk-tabbar {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 0;
+  width: 100%; max-width: 460px; display: flex;
+  background: var(--paper-raised); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 20;
+}
+.lk-tabbar-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 9px 0 10px; text-decoration: none; color: var(--ink-soft);
+  border: none; background: transparent; cursor: pointer; font-size: 10.5px; position: relative;
+}
+.lk-tabbar-item.is-active { color: var(--reserve); }
+.lk-tabbar-item svg { display: block; }
+
+/* — compléments aux boutons de style.css (pas de variante pleine largeur/fantôme là-bas) — */
+.btn-block { display: block; width: 100%; box-sizing: border-box; text-align: center; }
+.btn-ghost { background: transparent; color: var(--ink-soft); }
+.btn-ghost:hover { color: var(--reserve); }
+.btn-outline { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn-outline:hover { border-color: var(--reserve); color: var(--reserve); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-danger { background: var(--critical-soft); color: var(--critical); }
+.btn-icon {
+  width: 38px; height: 38px; padding: 0; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 18px; line-height: 1;
+}
+
+/* — statistiques — */
+.lk-stat-row { display: flex; gap: 16px; margin: 4px 0 16px; }
+.lk-stat { flex: 1; }
+.lk-stat-value { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 22px; font-variant-numeric: tabular-nums; }
+.lk-stat-label { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+
+/* — état vide — */
+.lk-empty { color: var(--ink-soft); font-size: 12.5px; padding: 10px 0; }
+
+/* — profil proche du prototype mobile — */
+.lk-user-code-card { display: flex; flex-direction: column; gap: 4px; }
+.lk-user-code {
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+.lk-share-actions { display: flex; gap: 8px; }
+.lk-share-actions .btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-inline: 12px;
+}
+.lk-menu-card { padding: 2px 14px; }
+.lk-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+}
+.lk-menu-row:last-child { border-bottom: none; }
+.lk-menu-row > svg:first-child { color: var(--ink-soft); flex: none; }
+.lk-menu-row span { flex: 1; font-size: 14px; }
+.lk-segmented {
+  display: flex;
+  background: color-mix(in srgb, var(--line) 74%, transparent);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 2px;
+}
+.lk-segmented button {
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  background: transparent;
+  color: var(--ink-soft);
+}
+.lk-segmented button.is-active { background: var(--reserve); color: var(--reserve-ink); }
+.lk-switch {
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  background: var(--line);
+  padding: 0;
+  flex: none;
+}
+.lk-switch span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--paper-raised);
+  transition: left .15s ease;
+}
+.lk-switch.is-on { background: var(--reserve); }
+.lk-switch.is-on span { left: 20px; }
+
+/* — bascule de rôle (formulaires) — */
+.lk-pills { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 16px; }
+.lk-pill {
+  padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); cursor: pointer;
+  font-weight: 600; font-size: 12.5px; background: var(--paper-raised); color: var(--ink);
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.lk-pill.is-active { background: var(--reserve); color: var(--reserve-ink); border-color: var(--reserve); }
+
+/* — champ de formulaire style app — */
+.lk-field { margin-bottom: 14px; }
+.lk-field label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
+.lk-field input, .lk-field select, .lk-field textarea {
+  width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--paper-raised); color: var(--ink);
+  font-size: 14.5px; font-family: inherit;
+}
+.lk-field input:focus, .lk-field select:focus, .lk-field textarea:focus { outline: none; border-color: var(--reserve); }
+.lk-field .field-errors { color: var(--critical); font-size: 12px; margin: 6px 0 0; }
+.lk-field-hint { color: var(--ink-soft); font-size: 11.5px; margin: 6px 0 0; }
+.lk-checkbox { display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin-bottom: 14px; }
+
+/* — compteur pas à pas (ex. nombre de membres à simuler) — */
+.lk-stepper { display: flex; align-items: center; gap: 10px; }
+.lk-stepper-input {
+  width: 56px; text-align: center; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 17px;
+  padding: 9px 4px; border-radius: 12px; border: 1px solid var(--line); box-sizing: border-box;
+  background: var(--paper-raised); color: var(--ink); -moz-appearance: textfield;
+}
+.lk-stepper-input::-webkit-inner-spin-button,
+.lk-stepper-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.lk-stepper-input:focus { outline: none; border-color: var(--reserve); }
+.lk-stepper-hint { font-size: 12px; color: var(--ink-soft); flex: 1; }
+
+/* — variante critique pour les chips de style.css (aucune n'y est définie) — */
+.chip-critical { background: var(--critical-soft); color: var(--critical); }
+/* — badge "Votre tour" (tag-accent du prototype : fond vert profond, texte quasi blanc) — */
+.chip-accent { background: var(--reserve-deep); color: var(--reserve-deep-ink); }
+/* — badge "En direct" : contour fin, pastille qui pulse (tag-outline du prototype) — */
+.chip-outline { background: transparent; border: 1px solid var(--reserve); color: var(--reserve); display: inline-flex; align-items: center; gap: 5px; }
+.chip-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--reserve); animation: lk-pulse 1.6s infinite; }
+@keyframes lk-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .chip-live-dot { animation: none; } }
+/* — icône "reçu" dans la file d'attente (remplace le chip par une petite coche discrète) — */
+.lk-received-icon { color: var(--ink-soft); flex: none; }
+
+/* — bannière de risque/éligibilité — */
+.lk-banner { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; font-size: 12.5px; margin-bottom: 10px; }
+.lk-banner-warning { background: var(--vision-soft); color: var(--vision); }
+.lk-banner-critical { background: var(--critical-soft); color: var(--critical); }
+.lk-banner-success { background: var(--reserve-soft); color: var(--reserve); }
+
+/* — écran de succès — */
+.lk-done { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 40px 20px; }
+.lk-done svg { color: var(--reserve); }
+.lk-done h1 { font-size: 19px; margin: 0; }
+
+/* — légende de graphique (historique / prévision / marge), reprise à
+   l'identique du prototype : trait plein, trait pointillé (motif en
+   dégradé répété plutôt qu'une bordure dashed, pour un rendu fidèle à
+   petite échelle), petit carré pour la marge — */
+.lk-chart-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; font-size: 10.5px; opacity: 0.6; }
+.lk-chart-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.lk-chart-legend i {
+  display: inline-block; width: 12px; height: 2px; flex: none;
+  background: var(--reserve);
+}
+.lk-chart-legend i.is-dashed {
+  opacity: 0.6;
+  background-image: repeating-linear-gradient(to right, var(--reserve) 0 3px, transparent 3px 6px);
+}
+.lk-chart-legend i.is-soft {
+  width: 9px; height: 9px; border-radius: 2px; background: var(--reserve); opacity: 0.55;
+}
+.lk-done p { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 10px; }

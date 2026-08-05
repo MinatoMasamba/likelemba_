@@ -1,0 +1,24 @@
+{% with url_name=request.resolver_match.url_name %}
+<nav class="lk-tabbar">
+  <a href="{% url 'dashboard:group_list' %}" class="lk-tabbar-item{% if url_name == 'group_list' or url_name == 'group_detail' or url_name == 'contribute' or url_name == 'join_group' %} is-active{% endif %}">
+    <svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M240,208H229.33V116.35a15.91,15.91,0,0,0-5.17-11.75l-88-79.28a16,16,0,0,0-21.32,0l-88,79.28a15.91,15.91,0,0,0-5.17,11.75V208H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM40,116.35,128,37.07l88,79.28V208H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H40Zm96,91.65H112V160h24Z"/></svg>
+    <span>Groupes</span>
+  </a>
+  <a href="{% url 'dashboard:requests_tab' %}" class="lk-tabbar-item{% if url_name == 'requests_tab' or url_name == 'request_detail' %} is-active{% endif %}">
+    <svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48Zm-8,16v14.61l-88,55.06-88-55.06V64ZM40,192V98.61l83.72,52.35a8,8,0,0,0,8.56,0L216,98.61V192Z"/></svg>
+    <span>Demandes</span>
+  </a>
+  <a href="{% url 'dashboard:prediction_list' %}" class="lk-tabbar-item{% if url_name == 'prediction_list' or url_name == 'prediction_detail' %} is-active{% endif %}">
+    <svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M232,72V184a8,8,0,0,1-16,0V91.31L140.24,167a8,8,0,0,1-11.31,0L88,126.06,29.66,184.34a8,8,0,0,1-11.32-11.31l64-64a8,8,0,0,1,11.32,0L134.63,149,204.69,79H160a8,8,0,0,1,0-16h64A8,8,0,0,1,232,72Z"/></svg>
+    <span>Prédiction</span>
+  </a>
+  <a href="{% url 'dashboard:history' %}" class="lk-tabbar-item{% if url_name == 'history' %} is-active{% endif %}">
+    <svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M136,80v43.47l36.12,21.67a8,8,0,0,1-8.24,13.72l-40-24A8,8,0,0,1,120,128V80a8,8,0,0,1,16,0Zm-8-48A95.44,95.44,0,0,0,60.08,60.15C52.81,67.51,46.35,74.59,40,82V64a8,8,0,0,0-16,0v40a8,8,0,0,0,8,8H72a8,8,0,0,0,0-16H49.62c8-8.42,16.66-17.09,25.6-24.63a80,80,0,1,1,1.53,121.34,8,8,0,1,0-10.5,12.06A96,96,0,1,0,128,32Z"/></svg>
+    <span>Historique</span>
+  </a>
+  <a href="{% url 'dashboard:profile' %}" class="lk-tabbar-item{% if url_name == 'profile' or url_name == 'profile_edit' or url_name == 'password_change' %} is-active{% endif %}">
+    <svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M230.92,212c-15.23-26.33-38.7-45.21-65.86-53.87a72,72,0,1,0-74.12,0C63.78,166.75,40.31,185.63,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"/></svg>
+    <span>Profil</span>
+  </a>
+</nav>
+{% endwith %}
