@@ -91,12 +91,18 @@ class TransactionService:
         total_payout = group.contribution_net * group.number_of_members
 
         with transaction.atomic():
+            # La position réelle dans le cycle vient de QueuePosition (seule
+            # source de vérité tenue à jour) : Membership.queue_position
+            # n'est renseigné nulle part dans le code applicatif réel et
+            # vaut toujours None, ce qui ferait échouer l'insertion ci-dessous
+            # (Payout.cycle_position est NOT NULL).
+            queue_position = QueuePosition.objects.filter(cycle=cycle, membership=membership).first()
             payout = Payout.objects.create(
                 cycle=cycle,
                 membership=membership,
                 amount=total_payout,
                 payout_date=timezone.now(),
-                cycle_position=membership.queue_position,
+                cycle_position=queue_position.position if queue_position else 0,
                 status='validated'
             )
 
@@ -130,3 +136,25 @@ class TransactionService:
                 group.save()
 
             return payout
+
+    @staticmethod
+    def give_payout_manually(membership):
+        """
+        Verse la cagnotte à un membre désigné directement par l'admin, sans
+        attendre que ce soit son tour dans la file d'attente (ex: cas
+        particulier, urgence). Réutilise process_payout, qui met à jour la
+        file et fait avancer le curseur vers le prochain membre non encore
+        servi, après avoir vérifié les préconditions qu'il ne vérifie pas
+        lui-même.
+        """
+        if not membership.is_active:
+            raise BusinessLogicError("Ce membre n'est plus actif dans le groupe.")
+        if membership.has_received_payout:
+            raise BusinessLogicError("Ce membre a déjà reçu sa cagnotte pour ce cycle.")
+
+        group = membership.group
+        active_cycle = group.cycles.filter(is_active=True, is_completed=False).first()
+        if not active_cycle:
+            raise BusinessLogicError("Aucun cycle actif.")
+
+        TransactionService.process_payout(membership, active_cycle)

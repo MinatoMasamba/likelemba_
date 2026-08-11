@@ -161,11 +161,16 @@
   {% endif %}
 
   <h3 class="lk-section-title">Membres</h3>
+  <p class="lk-card-meta" style="margin:-4px 0 8px">Clic long sur un membre pour lui donner la cagnotte ou le retirer.</p>
   {% for m in contributors %}
-    <div class="lk-card-row" style="padding:8px 0;border-bottom:1px solid var(--line)">
+    <div class="lk-card-row lk-member-row" style="padding:8px 0;border-bottom:1px solid var(--line)"
+         data-member-name="{{ m.user.full_name }}"
+         data-give-payout-url="{% url 'dashboard:give_payout' group_id=group.id membership_id=m.id %}"
+         data-exit-url="{% url 'dashboard:member_exit' group_id=group.id membership_id=m.id %}"
+         data-detail-url="{% url 'dashboard:admin_member_detail' group_id=group.id membership_id=m.id %}">
       <div class="lk-avatar lk-avatar-sm">{{ m.user.full_name|slice:":1"|upper }}</div>
       <div style="flex:1;min-width:0">
-        <a href="{% url 'dashboard:admin_member_detail' group_id=group.id membership_id=m.id %}" style="text-decoration:none;color:inherit;font-size:13px">{{ m.user.full_name }}</a>
+        <span style="font-size:13px">{{ m.user.full_name }}</span>
         <div class="lk-card-meta">Cotisé : {{ m.total_contributed|floatformat:0 }} FC</div>
       </div>
       {% if m.debt_count %}<span class="chip">{{ m.debt_count }} dette{{ m.debt_count|pluralize }}</span>{% else %}<span class="chip chip-member">À jour</span>{% endif %}
@@ -173,6 +178,22 @@
   {% empty %}
     <p class="lk-empty">Aucun membre actif.</p>
   {% endfor %}
+
+  <div class="lk-modal-backdrop" id="memberActionBackdrop">
+    <div class="lk-modal">
+      <h3 id="memberActionTitle">Membre</h3>
+      <form method="post" id="memberActionGivePayoutForm">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-block">Donner la cagnotte</button>
+      </form>
+      <a class="btn btn-outline btn-block" id="memberActionDetailLink" href="#">Voir la fiche</a>
+      <form method="post" id="memberActionExitForm">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger btn-block">Retirer du groupe</button>
+      </form>
+      <button type="button" class="btn btn-ghost btn-block" id="memberActionCancel">Annuler</button>
+    </div>
+  </div>
 
   <h3 class="lk-section-title">Ajouter un membre</h3>
   <div class="lk-card">
@@ -200,5 +221,92 @@
     {% endfor %}
   {% endif %}
 
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if is_admin %}
+  <script>
+    (function () {
+      var LONG_PRESS_MS = 550;
+      var MOVE_TOLERANCE = 10;
+      var backdrop = document.getElementById('memberActionBackdrop');
+      if (!backdrop) return;
+
+      var titleEl = document.getElementById('memberActionTitle');
+      var givePayoutForm = document.getElementById('memberActionGivePayoutForm');
+      var exitForm = document.getElementById('memberActionExitForm');
+      var detailLink = document.getElementById('memberActionDetailLink');
+      var cancelBtn = document.getElementById('memberActionCancel');
+
+      function openModal(row) {
+        titleEl.textContent = row.dataset.memberName;
+        givePayoutForm.action = row.dataset.givePayoutUrl;
+        exitForm.action = row.dataset.exitUrl;
+        detailLink.href = row.dataset.detailUrl;
+        exitForm.onsubmit = function () {
+          return confirm('Confirmer le départ de ' + row.dataset.memberName + ' ?');
+        };
+        backdrop.classList.add('is-open');
+      }
+
+      function closeModal() {
+        backdrop.classList.remove('is-open');
+      }
+
+      cancelBtn.addEventListener('click', closeModal);
+      backdrop.addEventListener('click', function (e) {
+        if (e.target === backdrop) closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeModal();
+      });
+
+      document.querySelectorAll('.lk-member-row').forEach(function (row) {
+        var timer = null;
+        var startX = 0, startY = 0;
+        var longPressFired = false;
+
+        function start(e) {
+          startX = e.clientX;
+          startY = e.clientY;
+          longPressFired = false;
+          timer = setTimeout(function () {
+            longPressFired = true;
+            timer = null;
+            if (navigator.vibrate) navigator.vibrate(15);
+            openModal(row);
+          }, LONG_PRESS_MS);
+        }
+
+        function move(e) {
+          if (!timer) return;
+          if (Math.abs(e.clientX - startX) > MOVE_TOLERANCE || Math.abs(e.clientY - startY) > MOVE_TOLERANCE) {
+            clearTimeout(timer);
+            timer = null;
+          }
+        }
+
+        function cancel() {
+          if (timer) { clearTimeout(timer); timer = null; }
+        }
+
+        row.addEventListener('pointerdown', start);
+        row.addEventListener('pointermove', move);
+        row.addEventListener('pointerup', cancel);
+        row.addEventListener('pointerleave', cancel);
+        row.addEventListener('pointercancel', cancel);
+        row.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+        row.addEventListener('click', function () {
+          if (longPressFired) {
+            longPressFired = false;
+            return;
+          }
+          window.location.href = row.dataset.detailUrl;
+        });
+      });
+    })();
+  </script>
 {% endif %}
 {% endblock %}

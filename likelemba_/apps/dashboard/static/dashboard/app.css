@@ -399,4 +399,19 @@ a.lk-card:hover, a.lk-card:focus-visible { box-shadow: var(--shadow); transform:
 .lk-chart-legend i.is-soft {
   width: 9px; height: 9px; border-radius: 2px; background: var(--reserve); opacity: 0.55;
 }
+
+/* — modal d'action rapide sur un membre (clic long dans la liste) — */
+.lk-member-row { cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
+.lk-modal-backdrop {
+  display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5);
+  z-index: 100; align-items: flex-end; justify-content: center;
+}
+.lk-modal-backdrop.is-open { display: flex; }
+.lk-modal {
+  width: 100%; max-width: 460px; background: var(--paper-raised);
+  border: 1px solid var(--line); border-radius: 18px 18px 0 0; box-shadow: var(--shadow);
+  padding: 18px; box-sizing: border-box; padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+.lk-modal h3 { margin: 0 0 14px; font-size: 15px; }
+.lk-modal .btn-block + .btn-block { margin-top: 8px; }
 .lk-done p { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 10px; }

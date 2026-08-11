@@ -869,6 +869,23 @@ def member_exit(request, group_id, membership_id):
 
 @require_POST
 @login_required
+def give_payout(request, group_id, membership_id):
+    group, _membership, is_admin = _get_membership_or_404(request, group_id)
+    if not is_admin:
+        messages.error(request, "Vous n'êtes pas administrateur de ce groupe.")
+        return redirect('dashboard:group_detail', group_id=group.id)
+
+    target = get_object_or_404(Membership, id=membership_id, group=group)
+    try:
+        TransactionService.give_payout_manually(target)
+        messages.success(request, f"Cagnotte versée à {target.user.full_name}.")
+    except AppException as exc:
+        messages.error(request, str(exc.detail))
+    return redirect('dashboard:group_detail', group_id=group.id)
+
+
+@require_POST
+@login_required
 def member_replace(request, group_id):
     group, _membership, is_admin = _get_membership_or_404(request, group_id)
     if not is_admin:

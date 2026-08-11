@@ -71,6 +71,11 @@ urlpatterns = [
         name='member_exit',
     ),
     path(
+        'groups/<uuid:group_id>/members/<uuid:membership_id>/donner-cagnotte/',
+        views.give_payout,
+        name='give_payout',
+    ),
+    path(
         'groups/<uuid:group_id>/members/<uuid:membership_id>/deplacer/',
         views.member_move,
         name='member_move',
